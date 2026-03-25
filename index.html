@@ -193,4 +193,46 @@
         function abrirGasto() { document.getElementById('modal-gasto').style.display = 'flex'; }
         
         function guardarGasto() {
-            const val = parseInt(document.getElementById('m-
+            const val = parseInt(document.getElementById('m-gasto-val').value);
+            const desc = document.getElementById('m-gasto-desc').value || "Gasto sin nombre";
+            
+            if(!val || val <= 0) return alert("POR FAVOR INGRESA EL VALOR");
+
+            const nuevoGasto = { valor: val, motivo: desc, hora: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+            const listaGastos = appData.historialGastos || [];
+            listaGastos.push(nuevoGasto);
+
+            database.ref('/').update({ 
+                gastos: (appData.gastos || 0) + val,
+                historialGastos: listaGastos
+            }).then(() => {
+                cerrarTodo();
+                document.getElementById('m-gasto-val').value = '';
+                document.getElementById('m-gasto-desc').value = '';
+                alert("GASTO REGISTRADO ✅");
+            });
+        }
+
+        function verReporte() {
+            const t = appData.base + appData.ventas - appData.gastos;
+            let listaG = "DETALLE DE GASTOS:\n";
+            if(appData.historialGastos) {
+                appData.historialGastos.forEach(g => {
+                    listaG += `- [${g.hora}] ${g.motivo}: ${f(g.valor)}\n`;
+                });
+            } else { listaG += "Sin gastos hoy."; }
+
+            alert(`📊 REPORTES\n\nBase: ${f(appData.base)}\nVentas: ${f(appData.ventas)}\nGastos: ${f(appData.gastos)}\n-------------------\nTotal Caja: ${f(t)}\n\n${listaG}`);
+            
+            if(confirm("¿DESEAS REINICIAR LAS VENTAS Y GASTOS HOY?")) {
+                database.ref('/').update({ ventas: 0, gastos: 0, historialGastos: [] });
+            }
+        }
+
+        function cerrarTodo() {
+            document.getElementById('modal-admin').style.display = 'none';
+            document.getElementById('modal-gasto').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
