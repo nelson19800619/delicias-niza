@@ -3,40 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Niza POS - Reparación Total</title>
+    <title>Niza POS - Estable</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tap-active:active { transform: scale(0.9); opacity: 0.6; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
-        body { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .tap:active { transform: scale(0.9); opacity: 0.7; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="bg-slate-950 text-white font-sans pb-44">
+<body class="bg-slate-950 text-white pb-44">
 
-    <header class="bg-gradient-to-b from-red-800 to-red-950 p-5 rounded-b-[40px] sticky top-0 z-40 shadow-2xl border-b-2 border-orange-500/30">
+    <header class="bg-red-900 p-5 rounded-b-[30px] shadow-xl sticky top-0 z-50">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-lg font-black italic text-yellow-400 uppercase tracking-tighter">DELICIAS NIZA</h1>
+            <h1 class="font-black italic text-yellow-400 uppercase">NIZA POS</h1>
             <div class="flex gap-2">
-                <button onclick="abrirAdmin()" class="bg-yellow-500 text-black px-3 py-2 rounded-xl text-[10px] font-black uppercase tap-active">ADMIN ⚙️</button>
-                <button onclick="verReporte()" class="bg-black/40 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tap-active">CIERRE 📊</button>
+                <button onclick="abrirAdmin()" class="bg-yellow-500 text-black px-3 py-1 rounded-lg text-[10px] font-bold tap">ADMIN</button>
+                <button onclick="verReporte()" class="bg-black/40 px-3 py-1 rounded-lg text-[10px] font-bold tap">CIERRE</button>
             </div>
         </div>
-        <div class="grid grid-cols-4 gap-1 text-center font-mono">
-            <div class="bg-black/30 p-2 rounded-xl text-blue-300"><span class="text-[7px] block opacity-50 text-white uppercase">Base</span><span id="txt-base" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-black/30 p-2 rounded-xl text-green-400"><span class="text-[7px] block opacity-50 text-white uppercase">Ventas</span><span id="txt-ventas" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-black/30 p-2 rounded-xl text-red-400"><span class="text-[7px] block opacity-50 text-white uppercase">Gastos</span><span id="txt-gastos" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-orange-500/20 p-2 rounded-xl border border-orange-500/30 text-yellow-300 font-black"><span id="txt-total" class="text-[10px]">$ 0</span></div>
+        <div class="grid grid-cols-4 gap-1 text-[10px] text-center font-mono">
+            <div class="bg-black/20 p-2 rounded-lg text-blue-300">BASE<br><span id="t-base">$ 0</span></div>
+            <div class="bg-black/20 p-2 rounded-lg text-green-400">VENTAS<br><span id="t-ventas">$ 0</span></div>
+            <div class="bg-black/20 p-2 rounded-lg text-red-400">GASTOS<br><span id="t-gastos">$ 0</span></div>
+            <div class="bg-orange-500/20 p-2 rounded-lg text-yellow-300">CAJA<br><span id="t-total">$ 0</span></div>
         </div>
     </header>
 
-    <main class="p-4 max-w-xl mx-auto">
-        <div class="grid grid-cols-2 gap-3" id="menu-grid">
-            <div class="col-span-2 text-center py-20">
-                <p class="animate-pulse text-orange-500 font-black uppercase tracking-widest text-xs">Conectando con Niza...</p>
+    <main class="p-4 grid grid-cols-2 gap-3" id="menu"></main>
+
+    <div id="m-gasto" class="modal px-6">
+        <div class="bg-slate-900 border border-slate-700 w-full rounded-3xl p-6 text-center">
+            <h2 class="text-red-500 font-black mb-4 uppercase">Nuevo Gasto</h2>
+            <input type="number" id="g-v" placeholder="$ Valor" class="w-full bg-slate-800 p-4 rounded-xl mb-2 text-white text-center text-2xl outline-none">
+            <input type="text" id="g-d" placeholder="¿En qué?" class="w-full bg-slate-800 p-4 rounded-xl mb-6 text-white text-center uppercase outline-none">
+            <button onclick="guardarGasto()" class="w-full bg-red-600 py-4 rounded-xl font-bold tap mb-2">GUARDAR GASTO 💸</button>
+            <button onclick="cerrarTodo()" class="w-full text-slate-500 text-xs">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="m-admin" class="modal px-4">
+        <div class="bg-slate-900 w-full rounded-3xl p-6 max-h-[80vh] flex flex-col">
+            <input type="number" id="a-base" placeholder="Base $" class="w-full bg-slate-800 p-3 rounded-xl text-white text-center mb-4">
+            <div id="a-items" class="overflow-y-auto space-y-2 flex-1 pr-1 border-y border-slate-800 py-4"></div>
+            <div class="mt-4 flex gap-2">
+                <button onclick="cerrarTodo()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold text-xs uppercase">SALIR</button>
+                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-4 rounded-xl font-bold text-xs uppercase shadow-lg">GUARDAR ✅</button>
             </div>
         </div>
-    </main>
+    </div>
 
-    <div id="modal-gasto" class
+    <footer class="fixed bottom-6 left-6 right-6 bg-white rounded-[35px] p-6 flex justify-between items-center shadow-2xl z-50">
+        <div>
+            <span class="text-[9px] font-black text-slate-400 block uppercase">Total</span>
+            <span id="t-ticket" class="text-4xl font-black text-slate-900 italic font-mono leading-none">$ 0</span>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('m-gasto').style.display='flex'" class="bg-red-100 text-red-600 h-14 w-14 rounded-2xl flex items-center justify-center text-2xl tap">💸</button>
+            <button onclick="cobrar()" class="bg-green-600 text-white h-16 w-28 rounded-3xl flex items-center justify-center text-5xl tap shadow-xl">💰</button>
+        </div>
+    </footer>
+
+    <script>
+        const cfg = {
+            apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs",
+            authDomain: "delicias--niza.firebaseapp.com",
+            databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com",
+            projectId: "delicias--niza",
+            storageBucket: "delicias--niza.firebasestorage.app",
+            messagingSenderId: "274297319879",
+            appId: "1:274297319879:web:3c72d7034baf683e85a9e2"
+        };
+        firebase.initializeApp(cfg);
+        const db = firebase.database();
+        let data = null; let sub = 0;
+
+        const f = (n) => "$ " + new Intl.NumberFormat('de-DE').format(n || 0);
+
+        db.ref('/').on('value', (s) => {
+            data = s.val();
+            if (!data) {
+                db.ref('/').set({ base: 0, ventas: 0, gastos: 0, stock: [
+                    { id: 1, nombre: "Empanada Pollo", precio: 4000, cant: 10, icon: "🥟" },
+                    { id: 2, nombre: "Empanada Queso", precio: 4000, cant: 10, icon: "🧀" },
+                    { id: 3, nombre: "Empanada Mixta", precio: 4000, cant: 10, icon: "🌽" },
+                    { id: 4, nombre: "Empanada Hawayana", precio: 4000, cant: 10, icon: "🍍" },
+                    { id: 5, nombre: "Rellena/Papa", precio: 7000, cant: 10, icon: "🍖" },
+                    { id: 6, nombre: "Pinchos", precio: 8000, cant: 10, icon: "🍢" },
+                    { id: 7, nombre: "Fresas Crema", precio: 14000, cant: 10, icon: "🍓" },
+                    { id: 8, nombre: "Limonada", precio: 1000, cant: 10, icon: "🥤" }
+                ], h: [] });
+            } else { render(); }
+        });
+
+        function render() {
+            const m = document.getElementById('menu'); m.innerHTML = '';
+            data.stock.forEach(p => {
+                m.innerHTML += `<div onclick="sum(${p.id})" class="bg-slate-900 p-4 rounded-[25px] tap border border-white/5 shadow-lg text-center">
+                    <div class="text-3xl mb-1">${p.icon}</div>
+                    <h3 class="text-[9px] font-black uppercase opacity-60 leading-none mb-1">${p.nombre}</h3>
+                    <p class="text-orange-400 font-bold text-xs">${f(p.precio)}</p>
+                    <span class="text-[7px] opacity-30 uppercase font-bold text-white">Stock: ${p.cant}</span>
+                </div>`;
+            });
+            document.getElementById('t-base').innerText = f(data.base);
+            document.getElementById('t-ventas').innerText = f(data.ventas);
+            document.getElementById('t-gastos').innerText = f(data.gastos);
+            document.getElementById('t-total').innerText = f(data.base + data.ventas - data.gastos);
+        }
+
+        function sum(id) {
+            let p = data.stock.find(x => x.id === id);
+            if(p.cant <= 0) return alert("¡SIN STOCK!");
+            sub += p.precio; p.cant--;
+            document.getElementById('t-ticket').innerText = f(sub);
+        }
+
+        function cobrar() {
+            if(sub === 0) return;
+            db.ref('/').update({ ventas: data.ventas + sub, stock: data.stock }).then(() => {
+                sub = 0; document.getElementById('t-ticket').innerText = f(0);
+                alert("COBRADO ✅");
+            });
+        }
+
+        function guardarGasto() {
+            const v = parseInt(document.getElementById('g-v').value);
+            const d = document.getElementById('g-d').value || "Gasto";
+            if(!v) return;
+            const hist = data.h || []; hist.push({ v, d, t: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+            db.ref('/').update({ gastos: (data.gastos || 0) + v, h: hist }).then(() => {
+                cerrarTodo(); document.getElementById('g-v').value=''; document.getElementById('g-d').value='';
+            });
+        }
+
+        function abrirAdmin() {
+            const c = document.getElementById('a-items'); document.getElementById('a-base').value = data.base;
+            c.innerHTML = '';
+            data.stock.forEach((p, i) => {
+                c.innerHTML += `<div class="bg-black/30 p-3 rounded-xl mb-2 text-center">
+                    <input type="text" id="n-${i}" value="${p.nombre}" class="bg-transparent text-yellow-400 font-bold text-[10px] w-full text-center outline-none uppercase">
+                    <div class="flex gap-2 mt-2">
+                        <input type="number" id="p-${i}" value="${p.precio}" class="w-1/2 bg-slate-800 p-2 rounded text-xs text-orange-400 text-center">
+                        <input type="number" id="c-${i}" value="${p.cant}" class="w-1/2 bg-slate-800 p-2 rounded text-xs text-green-400 text-center">
+                    </div>
+                </div>`;
+            });
+            document.getElementById('m-admin').style.display = 'flex';
+        }
+
+        function guardarAdmin() {
+            const b = parseInt(document.getElementById('a-base').value) || 0;
+            const ns = data.stock.map((p, i) => ({
+                ...p, nombre: document.getElementById(`n-${i}`).value,
+                precio: parseInt(document.getElementById(`p-${i}`).value) || 0,
+                cant: parseInt(document.getElementById(`c-${i}`).value) || 0
+            }));
+            db.ref('/').update({ base: b, stock: ns }).then(() => cerrarTodo());
+        }
+
+        function verReporte() {
+            let l = `📊 REPORTE:\nCaja: ${f(data.base + data.ventas - data.gastos)}\n\nGASTOS:\n`;
+            if(data.h) data.h.forEach(g => l += `- ${g.d}: ${f(g.v)}\n`);
+            alert(l);
+            if(confirm("¿RESET HOY?")) db.ref('/').update({ ventas: 0, gastos: 0, h: [] });
+        }
+
+        function cerrarTodo() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    </script>
+</body>
+</html>
