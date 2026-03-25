@@ -117,4 +117,87 @@
                 </div>`;
             });
             document.getElementById('txt-base').innerText = formatP(appData.base);
-            document.getElementById('txt-ventas
+            document.getElementById('txt-ventas').innerText = formatP(appData.ventas);
+            document.getElementById('txt-gastos').innerText = formatP(appData.gastos);
+            document.getElementById('txt-total').innerText = formatP(appData.base + appData.ventas - appData.gastos);
+        }
+
+        function agregar(id) {
+            let p = appData.stock.find(x => x.id === id);
+            if(p.cant <= 0) return alert("¡SIN STOCK!");
+            subtotal += p.precio;
+            p.cant--;
+            document.getElementById('total-ticket').innerText = formatP(subtotal);
+        }
+
+        function finalizarVenta() {
+            if(subtotal === 0) return;
+            const nuevaVenta = (appData.ventas || 0) + subtotal;
+            db.ref('/').update({ 
+                ventas: nuevaVenta, 
+                stock: appData.stock 
+            }).then(() => {
+                subtotal = 0;
+                document.getElementById('total-ticket').innerText = formatP(0);
+                alert("COBRADO ✅");
+            }).catch(e => alert("Error al cobrar: " + e.message));
+        }
+
+        function guardarGasto() {
+            const v = parseInt(document.getElementById('g-val').value);
+            const d = document.getElementById('g-desc').value || "Varios";
+            if(!v) return alert("Ingresa el valor del gasto");
+            const lista = appData.hGastos || [];
+            lista.push({ v, d, h: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+            db.ref('/').update({ 
+                gastos: (appData.gastos || 0) + v, 
+                hGastos: lista 
+            }).then(() => { 
+                cerrarTodo(); 
+                document.getElementById('g-val').value=''; 
+                document.getElementById('g-desc').value=''; 
+                alert("GASTO GUARDADO 💸");
+            });
+        }
+
+        function abrirAdmin() {
+            const cont = document.getElementById('admin-items');
+            document.getElementById('adm-base').value = appData.base;
+            cont.innerHTML = '';
+            appData.stock.forEach((p, i) => {
+                cont.innerHTML += `
+                <div class="bg-slate-800/40 p-5 rounded-[25px] border border-white/5 mb-2">
+                    <input type="text" id="an-${i}" value="${p.nombre}" class="bg-transparent text-yellow-400 font-black uppercase text-[10px] w-full text-center outline-none mb-3">
+                    <div class="flex gap-2">
+                        <input type="number" id="ap-${i}" value="${p.precio}" class="w-1/2 bg-black/50 p-3 rounded-xl text-xs text-orange-400 text-center font-mono">
+                        <input type="number" id="ac-${i}" value="${p.cant}" class="w-1/2 bg-black/50 p-3 rounded-xl text-xs text-green-400 text-center font-mono">
+                    </div>
+                </div>`;
+            });
+        }
+
+        function guardarAdmin() {
+            const b = parseInt(document.getElementById('adm-base').value) || 0;
+            const ns = appData.stock.map((p, i) => ({
+                ...p, nombre: document.getElementById(`an-${i}`).value,
+                precio: parseInt(document.getElementById(`ap-${i}`).value) || 0,
+                cant: parseInt(document.getElementById(`ac-${i}`).value) || 0
+            }));
+            db.ref('/').update({ base: b, stock: ns }).then(() => { cerrarTodo(); alert("AJUSTES GUARDADOS ✅"); });
+        }
+
+        function verReporte() {
+            let l = `📊 RESUMEN DELICIAS NIZA:\n\nBase: ${formatP(appData.base)}\nVentas: ${formatP(appData.ventas)}\nGastos: ${formatP(appData.gastos)}\nTotal: ${formatP(appData.base + appData.ventas - appData.gastos)}\n\nLISTA DE GASTOS:\n`;
+            if(appData.hGastos && appData.hGastos.length > 0) {
+                appData.hGastos.forEach(g => l += `- [${g.h}] ${g.d}: ${formatP(g.v)}\n`);
+            } else { l += "Sin gastos."; }
+            alert(l);
+            if(confirm("¿RESET CAJA POR HOY?")) db.ref('/').update({ ventas: 0, gastos: 0, hGastos: [] });
+        }
+
+        function cerrarTodo() { 
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+    </script>
+</body>
+</html>
