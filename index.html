@@ -128,4 +128,99 @@
             grid.innerHTML = '';
             appData.stock.forEach(p => {
                 grid.innerHTML += `
-                    <div onclick
+                    <div onclick="vender(${p.id})" class="bg-slate-900 border border-white/5 p-4 rounded-[25px] tap-active shadow-lg">
+                        <div class="text-3xl mb-1">${p.icon}</div>
+                        <h3 class="text-[10px] font-black uppercase opacity-60 mb-1">${p.nombre}</h3>
+                        <p class="text-orange-400 font-mono font-bold text-xs">$${f(p.precio)}</p>
+                        <span class="text-[8px] font-bold opacity-30 uppercase">Stock: ${p.cant}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('txt-base').innerText = `$${f(appData.base)}`;
+            document.getElementById('txt-ventas').innerText = `$${f(appData.ventas)}`;
+            document.getElementById('txt-gastos').innerText = `$${f(appData.gastos)}`;
+            const cajaTotal = appData.base + appData.ventas - appData.gastos;
+            document.getElementById('txt-total').innerText = `$${f(cajaTotal)}`;
+        }
+
+        function abrirAdmin() {
+            const cont = document.getElementById('admin-items');
+            document.getElementById('adm-base').value = appData.base;
+            cont.innerHTML = '';
+            appData.stock.forEach((p, i) => {
+                cont.innerHTML += `
+                    <div class="bg-slate-800/60 p-4 rounded-2xl border border-white/5">
+                        <input type="text" id="adm-nom-${i}" value="${p.nombre}" class="bg-transparent text-yellow-400 font-black uppercase text-[10px] w-full mb-2 outline-none">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="adm-pre-${i}" value="${p.precio}" class="bg-slate-950 p-2 rounded-lg text-xs font-mono text-orange-400 text-center">
+                            <input type="number" id="adm-can-${i}" value="${p.cant}" class="bg-slate-950 p-2 rounded-lg text-xs font-mono text-green-400 text-center">
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('modal-admin').classList.add('active');
+        }
+
+        function guardarAdmin() {
+            const b = parseInt(document.getElementById('adm-base').value) || 0;
+            const ns = appData.stock.map((p, i) => ({
+                ...p, nombre: document.getElementById(`adm-nom-${i}`).value,
+                precio: parseInt(document.getElementById(`adm-pre-${i}`).value) || 0,
+                cant: parseInt(document.getElementById(`adm-can-${i}`).value) || 0
+            }));
+            database.ref('/').update({ base: b, stock: ns }).then(() => cerrarModales());
+        }
+
+        function vender(id) {
+            let p = appData.stock.find(x => x.id === id);
+            if(p.cant <= 0) return alert("STOCK AGOTADO");
+            tempTotal += p.precio; p.cant--;
+            document.getElementById('total-ticket').innerText = `$${f(tempTotal)}`;
+        }
+
+        function finalizarVenta() {
+            if(tempTotal === 0) return;
+            let ventaFinal = tempTotal + (esDomi ? 2000 : 0);
+            database.ref('/').update({ ventas: appData.ventas + ventaFinal, stock: appData.stock })
+                .then(() => {
+                    tempTotal = 0; if(esDomi) toggleDomi();
+                    document.getElementById('total-ticket').innerText = `$0`;
+                    alert("VENTA GUARDADA ✅");
+                });
+        }
+
+        function toggleDomi() {
+            esDomi = !esDomi;
+            const ui = document.getElementById('btn-domi-ui');
+            const check = document.getElementById('check-ui');
+            if(esDomi) { ui.classList.add('bg-orange-500/10', 'border-orange-400'); check.classList.add('bg-orange-500'); }
+            else { ui.classList.remove('bg-orange-500/10', 'border-orange-400'); check.classList.remove('bg-orange-500'); }
+        }
+
+        function abrirGasto() { document.getElementById('modal-gasto').classList.add('active'); }
+        
+        function guardarGasto() {
+            const valor = parseInt(document.getElementById('m-gasto').value);
+            if(!valor || valor <= 0) return alert("INGRESA UN VALOR VÁLIDO");
+            database.ref('/').update({ gastos: appData.gastos + valor })
+                .then(() => { 
+                    cerrarModales(); 
+                    document.getElementById('m-gasto').value = ''; 
+                    alert("GASTO REGISTRADO 💸");
+                });
+        }
+
+        function verReporte() {
+            const total = appData.base + appData.ventas - appData.gastos;
+            alert(`📝 RESUMEN DE CAJA\n\nBase: $${f(appData.base)}\nVentas: $${f(appData.ventas)}\nGastos: $${f(appData.gastos)}\n-------------------\nTOTAL EN CAJA: $${f(total)}`);
+            if(confirm("¿DESEAS REINICIAR LAS VENTAS DE HOY?")) {
+                database.ref('/').update({ ventas: 0, gastos: 0 });
+            }
+        }
+
+        function cerrarModales() { 
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); 
+        }
+    </script>
+</body>
+</html>
