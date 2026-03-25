@@ -3,64 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Niza POS - Estable</title>
+    <title>Niza POS - Versión Final</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .tap-active:active { transform: scale(0.9); opacity: 0.6; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        body { -webkit-tap-highlight-color: transparent; user-select: none; }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans pb-44">
 
-    <header class="bg-gradient-to-b from-red-800 to-red-950 p-5 rounded-b-[40px] sticky top-0 z-40 shadow-2xl border-b-2 border-orange-500/30">
+    <header class="bg-gradient-to-b from-red-800 to-red-950 p-5 rounded-b-[45px] sticky top-0 z-40 shadow-2xl border-b-2 border-orange-500/30">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-lg font-black italic text-yellow-400 uppercase tracking-tighter">DELICIAS NIZA</h1>
+            <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter">DELICIAS NIZA</h1>
             <div class="flex gap-2">
-                <button onclick="abrirAdmin()" class="bg-yellow-500 text-black px-3 py-2 rounded-xl text-[10px] font-black uppercase tap-active shadow-lg">Admin ⚙️</button>
+                <button onclick="document.getElementById('modal-admin').style.display='flex'; abrirAdmin();" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tap-active shadow-lg">Admin ⚙️</button>
                 <button onclick="verReporte()" class="bg-black/40 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tap-active">Cierre 📊</button>
             </div>
         </div>
-        <div class="grid grid-cols-4 gap-2 text-center font-mono">
-            <div class="bg-black/30 p-2 rounded-xl text-blue-300"><span class="text-[7px] block opacity-50 text-white">BASE</span><span id="txt-base" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-black/30 p-2 rounded-xl text-green-400"><span class="text-[7px] block opacity-50 text-white">VENTAS</span><span id="txt-ventas" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-black/30 p-2 rounded-xl text-red-400"><span class="text-[7px] block opacity-50 text-white">GASTOS</span><span id="txt-gastos" class="text-[9px] font-bold">$ 0</span></div>
-            <div class="bg-orange-500/20 p-2 rounded-xl border border-orange-500/30 text-yellow-300 font-black"><span class="text-[7px] block opacity-50 text-white">CAJA</span><span id="txt-total" class="text-[10px]">$ 0</span></div>
+        <div class="grid grid-cols-4 gap-1 text-center font-mono">
+            <div class="bg-black/30 p-2 rounded-xl text-blue-300"><span class="text-[7px] block opacity-50 text-white uppercase">Base</span><span id="txt-base" class="text-[9px] font-bold">$ 0</span></div>
+            <div class="bg-black/30 p-2 rounded-xl text-green-400"><span class="text-[7px] block opacity-50 text-white uppercase">Ventas</span><span id="txt-ventas" class="text-[9px] font-bold">$ 0</span></div>
+            <div class="bg-black/30 p-2 rounded-xl text-red-400"><span class="text-[7px] block opacity-50 text-white uppercase">Gastos</span><span id="txt-gastos" class="text-[9px] font-bold">$ 0</span></div>
+            <div class="bg-orange-500/20 p-2 rounded-xl border border-orange-500/30 text-yellow-300 font-black"><span class="text-[7px] block opacity-50 text-white uppercase font-bold">Caja</span><span id="txt-total" class="text-[10px]">$ 0</span></div>
         </div>
     </header>
 
     <main class="p-4 max-w-xl mx-auto">
         <div class="grid grid-cols-2 gap-3" id="menu-grid">
-            <p class="col-span-2 text-center py-20 opacity-50 italic">Cargando...</p>
+            <p class="col-span-2 text-center py-20 opacity-50 italic uppercase text-[10px] tracking-widest">Cargando Sistema...</p>
         </div>
     </main>
 
     <div id="modal-gasto" class="modal px-6">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-[30px] p-6 text-center shadow-2xl">
-            <h2 class="text-xl font-black mb-4 text-red-500 uppercase italic">REGISTRAR GASTO</h2>
-            <input type="number" id="g-val" placeholder="$ Cuánto" class="w-full bg-slate-800 p-4 rounded-xl mb-3 text-white text-3xl font-mono text-center outline-none border border-red-900/50 focus:border-red-500">
-            <input type="text" id="g-desc" placeholder="¿En qué se gastó?" class="w-full bg-slate-800 p-4 rounded-xl mb-6 text-white text-sm text-center outline-none uppercase font-bold border border-slate-700">
-            <button onclick="guardarGasto()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase tap-active mb-3 shadow-lg shadow-red-900/20">GUARDAR GASTO 💸</button>
-            <button onclick="cerrarTodo()" class="w-full text-slate-500 text-[11px] font-black uppercase tracking-widest">CANCELAR</button>
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl">
+            <h2 class="text-xl font-black mb-6 text-red-500 uppercase italic">NUEVO GASTO</h2>
+            <input type="number" id="g-val" placeholder="$ 0" class="w-full bg-slate-800 p-4 rounded-2xl mb-4 text-white text-4xl font-mono text-center outline-none border-2 border-red-900/50">
+            <input type="text" id="g-desc" placeholder="¿EN QUÉ GASTASTE?" class="w-full bg-slate-800 p-4 rounded-2xl mb-8 text-white text-sm text-center outline-none uppercase font-black border border-slate-700">
+            <button onclick="guardarGasto()" class="w-full bg-red-600 py-5 rounded-3xl font-black uppercase tap-active mb-4 shadow-xl shadow-red-900/40">GUARDAR GASTO 💸</button>
+            <button onclick="cerrarTodo()" class="w-full text-slate-500 text-[10px] font-black uppercase tracking-[3px]">CANCELAR</button>
         </div>
     </div>
 
     <div id="modal-admin" class="modal px-4">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[30px] p-6 max-h-[85vh] flex flex-col">
-            <h2 class="text-center font-black text-yellow-500 mb-4 uppercase italic">CONFIGURACIÓN</h2>
-            <div class="bg-blue-900/10 p-4 rounded-2xl border border-blue-500/20 mb-4">
-                <p class="text-[10px] text-blue-300 uppercase mb-1 text-center font-bold tracking-widest">Base de Dinero ($)</p>
-                <input type="number" id="adm-base" class="w-full bg-slate-800 p-3 rounded-xl text-white font-mono text-xl text-center outline-none border border-slate-700">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[40px] p-6 max-h-[85vh] flex flex-col">
+            <h2 class="text-center font-black text-yellow-500 mb-6 uppercase italic tracking-widest">AJUSTES</h2>
+            <div class="bg-blue-900/10 p-5 rounded-3xl border border-blue-500/20 mb-6">
+                <p class="text-[10px] text-blue-300 uppercase mb-2 text-center font-black tracking-widest">Dinero Base en Caja</p>
+                <input type="number" id="adm-base" class="w-full bg-slate-800 p-3 rounded-xl text-white font-mono text-2xl text-center outline-none border border-slate-700">
             </div>
-            <div id="admin-items" class="overflow-y-auto space-y-2 flex-1 pr-1"></div>
-            <div class="mt-4 flex gap-2">
-                <button onclick="cerrarTodo()" class="flex-1 bg-slate-800 py-4 rounded-xl font-black text-[11px] text-slate-400 uppercase">SALIR</button>
-                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg">GUARDAR ✅</button>
+            <div id="admin-items" class="overflow-y-auto space-y-3 flex-1 pr-1"></div>
+            <div class="mt-6 flex gap-2">
+                <button onclick="cerrarTodo()" class="flex-1 bg-slate-800 py-5 rounded-3xl font-black text-[10px] text-slate-400 uppercase tracking-widest">SALIR</button>
+                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-5 rounded-3xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-green-900/30">GUARDAR ✅</button>
             </div>
         </div>
     </div>
 
-    <footer class="fixed bottom-6 left-6 right-6 bg-white rounded-[40px] p-6 flex justify-between items-center shadow-2xl z-50 border-t-4 border-green-500">
-        <div class="flex flex-col leading-none">
-            <span class="text-[9px] font-black text-slate-400 uppercase italic mb
+    <footer class="fixed bottom-6 left-6 right-6 bg-white rounded-[45px] p-6 flex justify-between items-center shadow-2xl z-50 border-t-4 border-green-500">
+        <div class="flex flex-col">
+            <span class="text-[9px] font-black text-slate-400 uppercase italic mb-1">TOTAL VENTA</span>
+            <span id="total-ticket" class="text-4xl font-black text-slate-900 italic font-mono tracking-tighter">$ 0</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('modal-gasto').style.display='flex'" class="bg-red-50 text-red-600 h-16 w-16 rounded-3xl flex items-center justify-center text-3xl tap-active border border-red-100 shadow-sm">💸</button>
+            <button onclick="finalizarVenta()" class="bg-green-600 text-white h-16 w-32 rounded-[30px] flex items-center justify-center text-5xl shadow-2xl tap-active font-black">💰</button>
+        </div>
+    </footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs",
+            authDomain: "delicias--niza.firebaseapp.com",
+            databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com",
+            projectId: "delicias--niza",
+            storageBucket: "delicias--niza.firebasestorage.app",
+            messagingSenderId: "274297319879",
+            appId: "1:274297319879:web:3c72d7034baf683e85a9e2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let appData = null; let subtotal = 0;
+
+        const formatP = (n) => "$ " + new Intl.NumberFormat('de-DE').format(n || 0);
+
+        db.ref('/').on('value', (snap) => {
+            appData = snap.val();
+            if (!appData || !appData.stock) {
+                db.ref('/').set({ base: 0, ventas: 0, gastos: 0, stock: [
+                    { id: 1, nombre: "Empanada Pollo", precio: 4000, cant: 10, icon: "🥟" },
+                    { id: 2, nombre: "Empanada Queso", precio: 4000, cant: 10, icon: "🧀" },
+                    { id: 3, nombre: "Empanada Mixta", precio: 4000, cant: 10, icon: "🌽" },
+                    { id: 4, nombre: "Empanada Hawayana", precio: 4000, cant: 10, icon: "🍍" },
+                    { id: 5, nombre: "Rellena/Papa", precio: 7000, cant: 10, icon: "🍖" },
+                    { id: 6, nombre: "Pinchos", precio: 8000, cant: 10, icon: "🍢" },
+                    { id: 7, nombre: "Fresas Crema", precio: 14000, cant: 10, icon: "🍓" },
+                    { id: 8, nombre: "Limonada", precio: 1000, cant: 10, icon: "🥤" }
+                ], hGastos: [] });
+            } else { renderMenu(); }
+        });
+
+        function renderMenu() {
+            const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
+            appData.stock.forEach(p => {
+                grid.innerHTML += `
+                <div onclick="agregar(${p.id})" class="bg-slate-900 border border-white/5 p-4 rounded-[35px] tap-active shadow-lg">
+                    <div class="text-4xl mb-2">${p.icon}</div>
+                    <h3 class="text-[10px] font-black uppercase opacity-60 leading-none mb-1">${p.nombre}</h3>
+                    <p class="text-orange-400 font-mono font-bold text-xs">${formatP(p.precio)}</p>
+                    <span class="text-[8px] font-bold opacity-30 uppercase">Disp: ${p.cant}</span>
+                </div>`;
+            });
+            document.getElementById('txt-base').innerText = formatP(appData.base);
+            document.getElementById('txt-ventas
