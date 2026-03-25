@@ -58,4 +58,207 @@
     </main>
 
     <div id="modal-admin" class="modal px-4">
-        <div class="bg-slate-900 border border-slate-70
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[40px] p-6 max-h-[85vh] flex flex-col">
+            <h2 class="text-xl font-black mb-1 text-center text-yellow-500 italic uppercase">AJUSTES INICIALES</h2>
+            <p class="text-[9px] text-center opacity-50 mb-6 uppercase tracking-widest">Configura Nombres, Precios y Stock</p>
+            
+            <div id="admin-items" class="overflow-y-auto space-y-4 pr-1 scroll-hide flex-1">
+                </div>
+
+            <div class="mt-6 flex gap-3">
+                <button onclick="cerrarAdmin()" class="flex-1 bg-slate-800 py-4 rounded-2xl font-bold text-[10px] uppercase text-slate-400">CANCELAR</button>
+                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-green-900/30">GUARDAR TODO ✅</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-gasto" class="modal px-6">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-[40px] p-8 text-center">
+            <h2 class="text-xl font-black mb-6 text-red-500 uppercase">REGISTRAR GASTO 💸</h2>
+            <input type="number" id="m-gasto" placeholder="¿Cuánto costó? $" class="w-full bg-slate-800 p-4 rounded-xl mb-3 text-white text-xl font-mono text-center outline-none border border-slate-700">
+            <input type="text" id="n-gasto" placeholder="¿En qué?" class="w-full bg-slate-800 p-4 rounded-xl mb-8 text-white text-sm outline-none border border-slate-700 text-center">
+            <button onclick="guardarGasto()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase">GUARDAR SALIDA</button>
+            <button onclick="cerrarAdmin()" class="w-full mt-4 text-slate-500 text-[10px] font-black uppercase">CERRAR</button>
+        </div>
+    </div>
+
+    <div id="modal-extra" class="modal px-6">
+        <div class="bg-white text-slate-900 w-full max-w-sm rounded-[45px] p-8 shadow-2xl">
+            <h2 class="text-2xl font-black text-center mb-8 italic">ACOMPAÑANTE</h2>
+            <button onclick="venderConExtra(0)" class="w-full bg-amber-50 border-b-8 border-amber-400 p-6 rounded-3xl mb-4 tap-active font-black text-amber-900 text-xl text-left italic font-mono">🥔 CON PAPA</button>
+            <button onclick="venderConExtra(1000)" class="w-full bg-emerald-50 border-b-8 border-emerald-400 p-6 rounded-3xl tap-active font-black text-emerald-900 text-xl text-left italic font-mono">🍌 CON PATACÓN</button>
+        </div>
+    </div>
+
+    <footer class="fixed bottom-6 left-6 right-6 bg-white rounded-[40px] p-6 flex justify-between items-center shadow-2xl z-50">
+        <div>
+            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Total Pedido</span>
+            <span id="total-ticket" class="text-4xl font-black text-slate-900 italic font-mono leading-none">$0</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="abrirGasto()" class="bg-red-50 text-red-600 h-16 w-14 rounded-2xl flex items-center justify-center text-2xl tap-active border border-red-100">💸</button>
+            <button onclick="finalizarVenta()" class="bg-green-600 text-white h-16 w-24 rounded-3xl flex items-center justify-center text-4xl shadow-xl tap-active">💰</button>
+        </div>
+    </footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs",
+            authDomain: "delicias--niza.firebaseapp.com",
+            databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com",
+            projectId: "delicias--niza",
+            storageBucket: "delicias--niza.firebasestorage.app",
+            messagingSenderId: "274297319879",
+            appId: "1:274297319879:web:3c72d7034baf683e85a9e2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let appData = { stock: [], ventas: 0, gastos: 0, base: 0, logs: [] };
+        let tempTotal = 0;
+        let pActivo = null;
+        let esDomi = false;
+
+        // --- CONEXIÓN REALTIME ---
+        database.ref('/').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(data) { appData = data; render(); } else { initDB(); }
+        });
+
+        function initDB() {
+            database.ref('/').set({
+                base: 0, ventas: 0, gastos: 0,
+                stock: [
+                    { id: 1, nombre: "Empanada Pollo", precio: 4000, cant: 10, icon: "🥟", extra: false },
+                    { id: 2, nombre: "Empanada Queso", precio: 4000, cant: 10, icon: "🧀", extra: false },
+                    { id: 3, nombre: "Empanada Mixta", precio: 4000, cant: 10, icon: "🌽", extra: false },
+                    { id: 4, nombre: "Empanada Hawayana", precio: 4000, cant: 10, icon: "🍍", extra: false },
+                    { id: 5, nombre: "Rellena/Papa", precio: 7000, cant: 10, icon: "🍖", extra: true },
+                    { id: 6, nombre: "Pinchos", precio: 8000, cant: 10, icon: "🍢", extra: true },
+                    { id: 7, nombre: "Fresas Crema", precio: 14000, cant: 10, icon: "🍓", extra: false },
+                    { id: 8, nombre: "Limonada", precio: 1000, cant: 10, icon: "🥤", extra: false }
+                ],
+                logs: [{time: new Date().toLocaleTimeString(), msg: "CAJA INICIADA", tipo: 'info'}]
+            });
+        }
+
+        function render() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            appData.stock.forEach(p => {
+                grid.innerHTML += `
+                    <div onclick="clickProd(${p.id})" class="bg-slate-900 border border-white/5 p-4 rounded-[30px] tap-active relative">
+                        <div class="text-3xl mb-1">${p.icon}</div>
+                        <h3 class="text-[10px] font-black uppercase opacity-60 leading-none">${p.nombre}</h3>
+                        <p class="text-orange-400 font-mono font-bold text-xs">$${p.precio.toLocaleString()}</p>
+                        <span class="text-[8px] font-bold ${p.cant < 5 ? 'text-red-500 animate-pulse' : 'text-slate-600'}">STOCK: ${p.cant}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('txt-base').innerText = `$${appData.base.toLocaleString()}`;
+            document.getElementById('txt-ventas').innerText = `$${appData.ventas.toLocaleString()}`;
+            document.getElementById('txt-gastos').innerText = `$${appData.gastos.toLocaleString()}`;
+            const neto = appData.base + appData.ventas - appData.gastos;
+            document.getElementById('txt-total').innerText = `$${neto.toLocaleString()}`;
+
+            const hLista = document.getElementById('historial-lista');
+            hLista.innerHTML = '';
+            const ultimos = (appData.logs || []).slice(-5).reverse();
+            ultimos.forEach(l => {
+                hLista.innerHTML += `<div class="text-[9px] border-b border-white/5 py-1 flex justify-between font-bold">
+                    <span class="opacity-30 font-mono text-[8px]">${l.time}</span>
+                    <span class="${l.tipo === 'v' ? 'text-green-400' : l.tipo === 'g' ? 'text-red-400' : 'text-blue-300'}">${l.msg}</span>
+                </div>`;
+            });
+        }
+
+        // --- FUNCIONES ADMIN ---
+        function abrirAdmin() {
+            const cont = document.getElementById('admin-items');
+            cont.innerHTML = `
+                <div class="bg-blue-900/20 p-4 rounded-3xl border border-blue-500/30 mb-4 text-center">
+                    <label class="text-[10px] font-black text-blue-300 uppercase block mb-2">💰 DINERO BASE EN CAJA</label>
+                    <input type="number" id="adm-base" value="${appData.base}" class="w-full bg-slate-800 p-4 rounded-2xl text-white font-mono text-2xl text-center outline-none">
+                </div>
+            `;
+            appData.stock.forEach((p, i) => {
+                cont.innerHTML += `
+                    <div class="bg-slate-800/50 p-4 rounded-3xl border border-white/10">
+                        <div class="flex gap-3 items-center mb-3">
+                            <span class="text-2xl">${p.icon}</span>
+                            <input type="text" id="adm-nom-${i}" value="${p.nombre}" class="bg-transparent border-b border-white/20 text-xs font-black w-full outline-none uppercase py-1">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[8px] opacity-40 uppercase font-black block mb-1">Precio $</label>
+                            <input type="number" id="adm-pre-${i}" value="${p.precio}" class="w-full bg-slate-900 p-3 rounded-xl text-xs font-mono text-orange-400"></div>
+                            <div><label class="text-[8px] opacity-40 uppercase font-black block mb-1">Stock inicial</label>
+                            <input type="number" id="adm-can-${i}" value="${p.cant}" class="w-full bg-slate-900 p-3 rounded-xl text-xs font-mono text-green-400"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('modal-admin').classList.add('active');
+        }
+
+        function guardarAdmin() {
+            const b = parseInt(document.getElementById('adm-base').value) || 0;
+            const s = appData.stock.map((p, i) => ({
+                ...p,
+                nombre: document.getElementById(`adm-nom-${i}`).value,
+                precio: parseInt(document.getElementById(`adm-pre-${i}`).value) || 0,
+                cant: parseInt(document.getElementById(`adm-can-${i}`).value) || 0
+            }));
+            database.ref('/').update({ base: b, stock: s, logs: [...(appData.logs || []), {time: new Date().toLocaleTimeString(), msg: "CAMBIOS EN ADMIN", tipo: 'info'}] });
+            cerrarAdmin();
+        }
+
+        // --- LÓGICA VENTA ---
+        function clickProd(id) {
+            pActivo = appData.stock.find(x => x.id === id);
+            if(pActivo.cant <= 0) return alert("⚠️ AGOTADO");
+            if(pActivo.extra) document.getElementById('modal-extra').classList.add('active');
+            else proc(0);
+        }
+        function venderConExtra(e) { proc(e); cerrarAdmin(); }
+        function proc(e) { tempTotal += (pActivo.precio + e); pActivo.cant--; document.getElementById('total-ticket').innerText = `$${tempTotal.toLocaleString()}`; }
+
+        function finalizarVenta() {
+            if(tempTotal === 0) return;
+            if(esDomi) tempTotal += 2000;
+            const l = { time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), msg: `VENTA: $${tempTotal.toLocaleString()}${esDomi ? ' 🛵' : ''}`, tipo: 'v' };
+            database.ref('/').update({ ventas: appData.ventas + tempTotal, stock: appData.stock, logs: [...(appData.logs || []), l] });
+            tempTotal = 0; if(esDomi) toggleDomi();
+            document.getElementById('total-ticket').innerText = `$0`;
+        }
+
+        function toggleDomi() {
+            esDomi = !esDomi;
+            const ui = document.getElementById('btn-domi-ui');
+            const icon = document.getElementById('icon-domi');
+            const check = document.getElementById('check-ui');
+            if(esDomi) { ui.classList.add('bg-orange-500/10', 'border-orange-500'); icon.classList.remove('grayscale', 'opacity-40'); check.classList.add('bg-orange-500', 'border-white'); }
+            else { ui.classList.remove('bg-orange-500/10', 'border-orange-500'); icon.classList.add('grayscale', 'opacity-40'); check.classList.remove('bg-orange-500', 'border-white'); }
+        }
+
+        function guardarGasto() {
+            const v = parseInt(document.getElementById('m-gasto').value);
+            const n = document.getElementById('n-gasto').value || "Gasto";
+            if(isNaN(v)) return;
+            const l = { time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), msg: `GASTO: ${n} (-$${v.toLocaleString()})`, tipo: 'g' };
+            database.ref('/').update({ gastos: appData.gastos + v, logs: [...(appData.logs || []), l] });
+            cerrarAdmin();
+        }
+
+        function verReporte() {
+            const n = appData.base + appData.ventas - appData.gastos;
+            alert(`📝 DELICIAS NIZA\nBase: $${appData.base.toLocaleString()}\nVentas: $${appData.ventas.toLocaleString()}\nGastos: $${appData.gastos.toLocaleString()}\nTOTAL: $${n.toLocaleString()}`);
+            if(confirm("¿Reiniciar ventas hoy?")) database.ref('/').update({ ventas: 0, gastos: 0 });
+        }
+
+        function abrirGasto() { document.getElementById('modal-gasto').classList.add('active'); }
+        function cerrarAdmin() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
+    </script>
+</body>
+</html>
