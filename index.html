@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Delicias Niza - POS Cloud</title>
+    <title>Delicias Niza - Sistema POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -11,28 +11,23 @@
         .tap-active:active { transform: scale(0.95); opacity: 0.7; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         .modal.active { display: flex; }
-        .scroll-hide::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans pb-48">
 
-    <header class="bg-gradient-to-b from-red-700 to-red-900 p-6 rounded-b-[45px] sticky top-0 z-40 shadow-2xl border-b-2 border-orange-500/40">
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-xl font-black italic text-yellow-400">DELICIAS NIZA</h1>
-                <p class="text-[9px] font-bold opacity-60 uppercase tracking-widest">Sincronizado Cloud</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="abrirAdmin()" class="bg-yellow-500 text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg tap-active">ADMIN ⚙️</button>
-                <button onclick="verReporte()" class="bg-black/40 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tap-active">Cierre 📊</button>
-            </div>
-        </div>
+    <header class="bg-gradient-to-b from-red-700 to-red-900 p-6 rounded-b-[45px] sticky top-0 z-40 shadow-2xl border-b-2 border-orange-500/40 text-center">
+        <h1 class="text-xl font-black italic text-yellow-400 mb-4 uppercase">DELICIAS NIZA</h1>
         
-        <div class="grid grid-cols-4 gap-2 text-center font-mono">
-            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase">Base</span><span id="txt-base" class="text-[10px] font-bold text-blue-300">$0</span></div>
-            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase">Ventas</span><span id="txt-ventas" class="text-[10px] font-bold text-green-400">$0</span></div>
-            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase">Gastos</span><span id="txt-gastos" class="text-[10px] font-bold text-red-400">$0</span></div>
-            <div class="bg-orange-500/40 p-2 rounded-2xl border border-orange-400/30"><span class="text-[7px] block opacity-50 uppercase">Caja</span><span id="txt-total" class="text-[10px] font-black text-yellow-300">$0</span></div>
+        <div class="grid grid-cols-4 gap-2 font-mono mb-4">
+            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase tracking-tighter">Base</span><span id="txt-base" class="text-[10px] font-bold text-blue-300">$0</span></div>
+            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase tracking-tighter">Ventas</span><span id="txt-ventas" class="text-[10px] font-bold text-green-400">$0</span></div>
+            <div class="bg-black/30 p-2 rounded-2xl"><span class="text-[7px] block opacity-50 uppercase tracking-tighter">Gastos</span><span id="txt-gastos" class="text-[10px] font-bold text-red-400">$0</span></div>
+            <div class="bg-orange-500/40 p-2 rounded-2xl border border-orange-400/30"><span class="text-[7px] block opacity-50 uppercase tracking-tighter text-white">Caja</span><span id="txt-total" class="text-[10px] font-black text-yellow-300">$0</span></div>
+        </div>
+
+        <div class="flex gap-2 justify-center">
+            <button onclick="abrirAdmin()" class="bg-yellow-500 text-black px-6 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg tap-active italic">ADMIN ⚙️</button>
+            <button onclick="verReporte()" class="bg-black/40 px-6 py-2 rounded-xl text-[10px] font-bold uppercase tap-active">Reporte 📊</button>
         </div>
     </header>
 
@@ -41,19 +36,15 @@
             <div class="flex items-center gap-4">
                 <div id="icon-domi" class="text-3xl grayscale opacity-40 transition-all">🛵</div>
                 <div>
-                    <p class="font-black text-xs uppercase tracking-tighter">¿ES DOMICILIO?</p>
-                    <p class="text-[10px] opacity-50">Aumenta $2.000 al total</p>
+                    <p class="font-black text-xs uppercase tracking-tighter italic">¿ES DOMICILIO?</p>
+                    <p class="text-[10px] opacity-50">Suma $2.000 al total</p>
                 </div>
             </div>
             <div id="check-ui" class="w-8 h-8 rounded-full border-4 border-slate-700 transition-all"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-3" id="menu-grid">
-            </div>
-
-        <div class="mt-8">
-            <h3 class="text-[10px] font-black uppercase text-slate-500 mb-3 ml-2 italic tracking-widest">Últimas Acciones</h3>
-            <div id="historial-lista" class="space-y-1 bg-slate-900/40 p-3 rounded-3xl min-h-[100px]"></div>
+            <p class="text-center col-span-2 py-10 opacity-50 italic animate-pulse">Cargando productos de Niza...</p>
         </div>
     </main>
 
@@ -61,42 +52,39 @@
         <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-[40px] p-6 max-h-[85vh] flex flex-col">
             <h2 class="text-xl font-black mb-1 text-center text-yellow-500 italic uppercase">AJUSTES INICIALES</h2>
             <p class="text-[9px] text-center opacity-50 mb-6 uppercase tracking-widest">Configura Nombres, Precios y Stock</p>
-            
-            <div id="admin-items" class="overflow-y-auto space-y-4 pr-1 scroll-hide flex-1">
-                </div>
-
+            <div id="admin-items" class="overflow-y-auto space-y-4 pr-1 flex-1"></div>
             <div class="mt-6 flex gap-3">
                 <button onclick="cerrarAdmin()" class="flex-1 bg-slate-800 py-4 rounded-2xl font-bold text-[10px] uppercase text-slate-400">CANCELAR</button>
-                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-green-900/30">GUARDAR TODO ✅</button>
+                <button onclick="guardarAdmin()" class="flex-1 bg-green-600 py-4 rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-green-900/30">GUARDAR CAMBIOS ✅</button>
             </div>
         </div>
     </div>
 
     <div id="modal-gasto" class="modal px-6">
         <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-[40px] p-8 text-center">
-            <h2 class="text-xl font-black mb-6 text-red-500 uppercase">REGISTRAR GASTO 💸</h2>
+            <h2 class="text-xl font-black mb-6 text-red-500 uppercase italic">Gasto Manual 💸</h2>
             <input type="number" id="m-gasto" placeholder="¿Cuánto costó? $" class="w-full bg-slate-800 p-4 rounded-xl mb-3 text-white text-xl font-mono text-center outline-none border border-slate-700">
             <input type="text" id="n-gasto" placeholder="¿En qué?" class="w-full bg-slate-800 p-4 rounded-xl mb-8 text-white text-sm outline-none border border-slate-700 text-center">
-            <button onclick="guardarGasto()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase">GUARDAR SALIDA</button>
+            <button onclick="guardarGasto()" class="w-full bg-red-600 py-4 rounded-2xl font-black uppercase">REGISTRAR SALIDA</button>
             <button onclick="cerrarAdmin()" class="w-full mt-4 text-slate-500 text-[10px] font-black uppercase">CERRAR</button>
         </div>
     </div>
 
     <div id="modal-extra" class="modal px-6">
         <div class="bg-white text-slate-900 w-full max-w-sm rounded-[45px] p-8 shadow-2xl">
-            <h2 class="text-2xl font-black text-center mb-8 italic">ACOMPAÑANTE</h2>
-            <button onclick="venderConExtra(0)" class="w-full bg-amber-50 border-b-8 border-amber-400 p-6 rounded-3xl mb-4 tap-active font-black text-amber-900 text-xl text-left italic font-mono">🥔 CON PAPA</button>
-            <button onclick="venderConExtra(1000)" class="w-full bg-emerald-50 border-b-8 border-emerald-400 p-6 rounded-3xl tap-active font-black text-emerald-900 text-xl text-left italic font-mono">🍌 CON PATACÓN</button>
+            <h2 class="text-xl font-black text-center mb-8 italic">ACOMPAÑANTE</h2>
+            <button onclick="venderConExtra(0)" class="w-full bg-amber-50 border-b-8 border-amber-400 p-6 rounded-3xl mb-4 tap-active font-black text-amber-900 text-xl text-left italic font-mono uppercase">🥔 CON PAPA</button>
+            <button onclick="venderConExtra(1000)" class="w-full bg-emerald-50 border-b-8 border-emerald-400 p-6 rounded-3xl tap-active font-black text-emerald-900 text-xl text-left italic font-mono uppercase">🍌 CON PATACÓN</button>
         </div>
     </div>
 
     <footer class="fixed bottom-6 left-6 right-6 bg-white rounded-[40px] p-6 flex justify-between items-center shadow-2xl z-50">
         <div>
-            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Total Pedido</span>
+            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 block italic">Total Pedido</span>
             <span id="total-ticket" class="text-4xl font-black text-slate-900 italic font-mono leading-none">$0</span>
         </div>
         <div class="flex gap-3">
-            <button onclick="abrirGasto()" class="bg-red-50 text-red-600 h-16 w-14 rounded-2xl flex items-center justify-center text-2xl tap-active border border-red-100">💸</button>
+            <button onclick="abrirGasto()" class="bg-red-50 text-red-600 h-16 w-14 rounded-2xl flex items-center justify-center text-2xl tap-active border border-red-100 shadow-sm">💸</button>
             <button onclick="finalizarVenta()" class="bg-green-600 text-white h-16 w-24 rounded-3xl flex items-center justify-center text-4xl shadow-xl tap-active">💰</button>
         </div>
     </footer>
@@ -115,31 +103,36 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let appData = { stock: [], ventas: 0, gastos: 0, base: 0, logs: [] };
+        let appData = null;
         let tempTotal = 0;
         let pActivo = null;
         let esDomi = false;
 
-        // --- CONEXIÓN REALTIME ---
+        // --- RESCATE DE DATOS ---
         database.ref('/').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if(data) { appData = data; render(); } else { initDB(); }
+            appData = snapshot.val();
+            // Si no hay productos en la nube, los creamos ahora mismo
+            if (!appData || !appData.stock) {
+                initDB();
+            } else {
+                render();
+            }
         });
 
         function initDB() {
+            const initialStock = [
+                { id: 1, nombre: "Empanada Pollo", precio: 4000, cant: 10, icon: "🥟", extra: false },
+                { id: 2, nombre: "Empanada Queso", precio: 4000, cant: 10, icon: "🧀", extra: false },
+                { id: 3, nombre: "Empanada Mixta", precio: 4000, cant: 10, icon: "🌽", extra: false },
+                { id: 4, nombre: "Empanada Hawayana", precio: 4000, cant: 10, icon: "🍍", extra: false },
+                { id: 5, nombre: "Rellena/Papa", precio: 7000, cant: 10, icon: "🍖", extra: true },
+                { id: 6, nombre: "Pinchos", precio: 8000, cant: 10, icon: "🍢", extra: true },
+                { id: 7, nombre: "Fresas Crema", precio: 14000, cant: 10, icon: "🍓", extra: false },
+                { id: 8, nombre: "Limonada", precio: 1000, cant: 10, icon: "🥤", extra: false }
+            ];
             database.ref('/').set({
-                base: 0, ventas: 0, gastos: 0,
-                stock: [
-                    { id: 1, nombre: "Empanada Pollo", precio: 4000, cant: 10, icon: "🥟", extra: false },
-                    { id: 2, nombre: "Empanada Queso", precio: 4000, cant: 10, icon: "🧀", extra: false },
-                    { id: 3, nombre: "Empanada Mixta", precio: 4000, cant: 10, icon: "🌽", extra: false },
-                    { id: 4, nombre: "Empanada Hawayana", precio: 4000, cant: 10, icon: "🍍", extra: false },
-                    { id: 5, nombre: "Rellena/Papa", precio: 7000, cant: 10, icon: "🍖", extra: true },
-                    { id: 6, nombre: "Pinchos", precio: 8000, cant: 10, icon: "🍢", extra: true },
-                    { id: 7, nombre: "Fresas Crema", precio: 14000, cant: 10, icon: "🍓", extra: false },
-                    { id: 8, nombre: "Limonada", precio: 1000, cant: 10, icon: "🥤", extra: false }
-                ],
-                logs: [{time: new Date().toLocaleTimeString(), msg: "CAJA INICIADA", tipo: 'info'}]
+                base: 0, ventas: 0, gastos: 0, stock: initialStock,
+                logs: [{time: new Date().toLocaleTimeString(), msg: "SISTEMA REPARADO", tipo: 'info'}]
             });
         }
 
@@ -152,7 +145,7 @@
                         <div class="text-3xl mb-1">${p.icon}</div>
                         <h3 class="text-[10px] font-black uppercase opacity-60 leading-none">${p.nombre}</h3>
                         <p class="text-orange-400 font-mono font-bold text-xs">$${p.precio.toLocaleString()}</p>
-                        <span class="text-[8px] font-bold ${p.cant < 5 ? 'text-red-500 animate-pulse' : 'text-slate-600'}">STOCK: ${p.cant}</span>
+                        <span class="text-[8px] font-bold ${p.cant < 5 ? 'text-red-500 animate-pulse' : 'text-slate-600'} uppercase">Disp: ${p.cant}</span>
                     </div>
                 `;
             });
@@ -162,19 +155,9 @@
             document.getElementById('txt-gastos').innerText = `$${appData.gastos.toLocaleString()}`;
             const neto = appData.base + appData.ventas - appData.gastos;
             document.getElementById('txt-total').innerText = `$${neto.toLocaleString()}`;
-
-            const hLista = document.getElementById('historial-lista');
-            hLista.innerHTML = '';
-            const ultimos = (appData.logs || []).slice(-5).reverse();
-            ultimos.forEach(l => {
-                hLista.innerHTML += `<div class="text-[9px] border-b border-white/5 py-1 flex justify-between font-bold">
-                    <span class="opacity-30 font-mono text-[8px]">${l.time}</span>
-                    <span class="${l.tipo === 'v' ? 'text-green-400' : l.tipo === 'g' ? 'text-red-400' : 'text-blue-300'}">${l.msg}</span>
-                </div>`;
-            });
         }
 
-        // --- FUNCIONES ADMIN ---
+        // --- FUNCIONES ADMIN (EDITAR) ---
         function abrirAdmin() {
             const cont = document.getElementById('admin-items');
             cont.innerHTML = `
@@ -193,7 +176,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="text-[8px] opacity-40 uppercase font-black block mb-1">Precio $</label>
                             <input type="number" id="adm-pre-${i}" value="${p.precio}" class="w-full bg-slate-900 p-3 rounded-xl text-xs font-mono text-orange-400"></div>
-                            <div><label class="text-[8px] opacity-40 uppercase font-black block mb-1">Stock inicial</label>
+                            <div><label class="text-[8px] opacity-40 uppercase font-black block mb-1">Stock</label>
                             <input type="number" id="adm-can-${i}" value="${p.cant}" class="w-full bg-slate-900 p-3 rounded-xl text-xs font-mono text-green-400"></div>
                         </div>
                     </div>
@@ -210,11 +193,10 @@
                 precio: parseInt(document.getElementById(`adm-pre-${i}`).value) || 0,
                 cant: parseInt(document.getElementById(`adm-can-${i}`).value) || 0
             }));
-            database.ref('/').update({ base: b, stock: s, logs: [...(appData.logs || []), {time: new Date().toLocaleTimeString(), msg: "CAMBIOS EN ADMIN", tipo: 'info'}] });
+            database.ref('/').update({ base: b, stock: s });
             cerrarAdmin();
         }
 
-        // --- LÓGICA VENTA ---
         function clickProd(id) {
             pActivo = appData.stock.find(x => x.id === id);
             if(pActivo.cant <= 0) return alert("⚠️ AGOTADO");
@@ -227,10 +209,10 @@
         function finalizarVenta() {
             if(tempTotal === 0) return;
             if(esDomi) tempTotal += 2000;
-            const l = { time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), msg: `VENTA: $${tempTotal.toLocaleString()}${esDomi ? ' 🛵' : ''}`, tipo: 'v' };
-            database.ref('/').update({ ventas: appData.ventas + tempTotal, stock: appData.stock, logs: [...(appData.logs || []), l] });
+            database.ref('/').update({ ventas: appData.ventas + tempTotal, stock: appData.stock });
             tempTotal = 0; if(esDomi) toggleDomi();
             document.getElementById('total-ticket').innerText = `$0`;
+            alert("✅ Venta Guardada");
         }
 
         function toggleDomi() {
@@ -238,27 +220,4 @@
             const ui = document.getElementById('btn-domi-ui');
             const icon = document.getElementById('icon-domi');
             const check = document.getElementById('check-ui');
-            if(esDomi) { ui.classList.add('bg-orange-500/10', 'border-orange-500'); icon.classList.remove('grayscale', 'opacity-40'); check.classList.add('bg-orange-500', 'border-white'); }
-            else { ui.classList.remove('bg-orange-500/10', 'border-orange-500'); icon.classList.add('grayscale', 'opacity-40'); check.classList.remove('bg-orange-500', 'border-white'); }
-        }
-
-        function guardarGasto() {
-            const v = parseInt(document.getElementById('m-gasto').value);
-            const n = document.getElementById('n-gasto').value || "Gasto";
-            if(isNaN(v)) return;
-            const l = { time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), msg: `GASTO: ${n} (-$${v.toLocaleString()})`, tipo: 'g' };
-            database.ref('/').update({ gastos: appData.gastos + v, logs: [...(appData.logs || []), l] });
-            cerrarAdmin();
-        }
-
-        function verReporte() {
-            const n = appData.base + appData.ventas - appData.gastos;
-            alert(`📝 DELICIAS NIZA\nBase: $${appData.base.toLocaleString()}\nVentas: $${appData.ventas.toLocaleString()}\nGastos: $${appData.gastos.toLocaleString()}\nTOTAL: $${n.toLocaleString()}`);
-            if(confirm("¿Reiniciar ventas hoy?")) database.ref('/').update({ ventas: 0, gastos: 0 });
-        }
-
-        function abrirGasto() { document.getElementById('modal-gasto').classList.add('active'); }
-        function cerrarAdmin() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); }
-    </script>
-</body>
-</html>
+            if(es
