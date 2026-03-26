@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DELICIAS NIZA PRO</title>
+    <title>NIZA POS - CONTROL TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +11,6 @@
         .tap:active { transform: scale(0.92); opacity: 0.6; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; }
         body { -webkit-tap-highlight-color: transparent; background-color: #080808; color: white; font-family: sans-serif; }
-        .btn-prod { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1px solid #333; }
     </style>
 </head>
 <body class="pb-40">
@@ -19,52 +18,64 @@
     <header class="bg-gradient-to-r from-red-800 to-orange-600 p-4 sticky top-0 shadow-2xl z-50 border-b-4 border-yellow-500">
         <div class="flex justify-between items-center mb-2">
             <div>
-                <h1 class="font-black italic text-white text-2xl leading-none">DELICIAS NIZA</h1>
-                <span class="text-[10px] text-yellow-200 font-bold tracking-[3px] uppercase">Punto de Venta</span>
+                <h1 class="font-black italic text-white text-xl leading-none">DELICIAS NIZA</h1>
+                <span class="text-[9px] text-yellow-200 font-bold uppercase">Turno: <span id="u-actual" class="underline text-white">---</span></span>
             </div>
             <div class="flex gap-2">
-                <button onclick="accesoAdmin()" class="bg-black/50 p-2 rounded-full tap text-xl">⚙️</button>
-                <button onclick="verRepo()" class="bg-yellow-400 text-black px-3 py-1 rounded-lg font-black text-xs tap uppercase">Cierre</button>
+                <button onclick="pedirUsuario()" class="bg-black/40 p-2 rounded-full tap text-sm">👤</button>
+                <button onclick="accesoAdmin()" class="bg-black/50 p-2 rounded-full tap text-sm">⚙️</button>
+                <button onclick="verRepo()" class="bg-yellow-400 text-black px-3 py-1 rounded-lg font-black text-[10px] tap uppercase">Cierre</button>
             </div>
         </div>
         <div class="grid grid-cols-4 gap-1 text-[8px] text-center font-bold">
-            <div class="bg-black/30 p-1 rounded">Base<br><span id="v-base" class="text-white font-mono text-sm">$ 0</span></div>
-            <div class="bg-black/30 p-1 rounded">Ventas<br><span id="v-ventas" class="text-green-300 font-mono text-sm">$ 0</span></div>
-            <div class="bg-black/30 p-1 rounded">Gastos<br><span id="v-gastos" class="text-red-300 font-mono text-sm">$ 0</span></div>
-            <div class="bg-yellow-400 p-1 rounded text-black shadow-lg">Caja<br><span id="v-total" class="font-mono text-sm">$ 0</span></div>
+            <div class="bg-black/30 p-1 rounded font-mono">Ventas<br><span id="v-ventas" class="text-green-300 text-sm">$ 0</span></div>
+            <div class="bg-black/30 p-1 rounded font-mono">Gastos<br><span id="v-gastos" class="text-red-300 text-sm">$ 0</span></div>
+            <div class="bg-yellow-400 p-1 rounded text-black shadow-lg">En Caja<br><span id="v-total" class="font-mono text-sm">$ 0</span></div>
+            <div class="bg-black/30 p-1 rounded text-[7px]">Base<br><span id="v-base" class="text-white text-xs">$ 0</span></div>
         </div>
     </header>
 
     <main id="menu" class="p-4 grid grid-cols-2 gap-4"></main>
 
-    <div id="m-opciones" class="modal px-6">
-        <div class="bg-zinc-900 p-6 rounded-[40px] w-full max-w-sm border-2 border-orange-500 shadow-[0_0_50px_rgba(234,88,12,0.3)]">
-            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-6 uppercase text-2xl italic italic">¿Qué sabor?</h2>
-            <div id="opt-container" class="grid grid-cols-1 gap-3"></div>
-            <button onclick="cerrarOpciones()" class="mt-6 text-zinc-500 font-bold uppercase text-xs">Cerrar</button>
+    <div id="m-user" class="modal px-6" style="display: flex;">
+        <div class="bg-zinc-900 p-8 rounded-[40px] w-full max-w-sm border-2 border-yellow-500 text-center">
+            <h2 class="text-white font-black mb-6 uppercase text-xl italic">IDENTIFICACIÓN</h2>
+            <div class="flex flex-col gap-4">
+                <button onclick="setUsuario('Nelson')" class="bg-orange-600 py-5 rounded-2xl text-xl font-black tap uppercase">Nelson</button>
+                <button onclick="setUsuario('Empleado 1')" class="bg-zinc-700 py-5 rounded-2xl text-xl font-black tap uppercase text-zinc-300">Empleado 1</button>
+                <button onclick="setUsuario('Empleado 2')" class="bg-zinc-700 py-5 rounded-2xl text-xl font-black tap uppercase text-zinc-300">Empleado 2</button>
+            </div>
         </div>
     </div>
 
-    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-6 rounded-[35px] w-full max-w-md max-h-[85vh] flex flex-col border border-zinc-700">
-        <h2 class="text-orange-500 font-black text-center mb-4 uppercase text-xl">Control de Inventario</h2>
+    <div id="m-opciones" class="modal px-6">
+        <div class="bg-zinc-900 p-6 rounded-[40px] w-full max-w-sm border-2 border-orange-500 shadow-xl">
+            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-6 uppercase text-2xl text-center italic">¿Qué sabor?</h2>
+            <div id="opt-container" class="grid grid-cols-1 gap-3"></div>
+            <button onclick="cerrarOpciones()" class="mt-6 text-zinc-500 font-bold uppercase text-xs w-full text-center">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-6 rounded-[35px] w-full max-w-md max-h-[85vh] flex flex-col border border-zinc-700 shadow-2xl">
+        <h2 class="text-orange-500 font-black text-center mb-4 uppercase text-xl tracking-widest italic">Panel de Control</h2>
         <div class="mb-4">
-            <label class="text-[10px] text-zinc-500 uppercase font-bold pl-2">Base de Caja Inicial</label>
-            <input type="number" id="a-base" class="w-full bg-zinc-800 p-3 rounded-xl text-xl text-white outline-none border border-zinc-700">
+            <label class="text-[10px] text-zinc-500 uppercase font-bold pl-2 italic">Ajustar Base Inicial</label>
+            <input type="number" id="a-base" class="w-full bg-zinc-800 p-4 rounded-xl text-xl text-white outline-none border border-zinc-700 text-center font-mono">
         </div>
         <div id="a-items" class="overflow-y-auto flex-1 space-y-3 mb-4 pr-1"></div>
         <div class="flex gap-2">
-            <button onclick="document.getElementById('m-admin').style.display='none'" class="flex-1 bg-zinc-800 py-4 rounded-2xl text-xs font-black">SALIR</button>
-            <button onclick="saveAdmin()" class="flex-1 bg-orange-600 py-4 rounded-2xl text-xs font-black shadow-xl">GUARDAR CAMBIOS ✅</button>
+            <button onclick="document.getElementById('m-admin').style.display='none'" class="flex-1 bg-zinc-800 py-4 rounded-2xl text-xs font-black italic">SALIR</button>
+            <button onclick="saveAdmin()" class="flex-1 bg-orange-600 py-4 rounded-2xl text-xs font-black shadow-xl italic">GUARDAR ✅</button>
         </div>
     </div></div>
 
     <footer class="fixed bottom-0 left-0 right-0 bg-white p-5 flex justify-between items-center z-50 rounded-t-[45px] shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
         <div>
-            <span class="text-zinc-400 text-[10px] block uppercase font-black mb-1">Total Pedido:</span>
-            <span id="t-ped" class="text-5xl font-black text-black font-mono italic leading-none">$ 0</span>
+            <span class="text-zinc-400 text-[9px] block uppercase font-black mb-1">Total Pedido:</span>
+            <span id="t-ped" class="text-5xl font-black text-black font-mono italic leading-none tracking-tighter">$ 0</span>
         </div>
         <div class="flex gap-2">
-            <button onclick="document.getElementById('m-gasto').style.display='flex'" class="bg-red-50 text-red-600 w-12 h-14 rounded-2xl text-2xl tap flex items-center justify-center border border-red-100 font-bold italic">💸</button>
+            <button onclick="abrirGasto()" class="bg-red-50 text-red-600 w-12 h-14 rounded-2xl text-2xl tap flex items-center justify-center border border-red-100 font-bold italic">💸</button>
             <button onclick="doCobro()" class="bg-green-600 text-white w-24 h-20 rounded-[30px] text-5xl tap shadow-2xl flex items-center justify-center font-black italic border-b-4 border-green-800">💰</button>
         </div>
     </footer>
@@ -82,11 +93,19 @@
         };
         firebase.initializeApp(cfg);
         const db = firebase.database();
-        let store = null, pedido = 0, tempProd = null, listaPedido = [];
+        let store = null, pedido = 0, tempProd = null, listaPedido = [], usuarioActual = "---";
 
         const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
 
-        db.ref('/v5').on('value', (s) => {
+        function setUsuario(nombre) {
+            usuarioActual = nombre;
+            document.getElementById('u-actual').innerText = nombre;
+            document.getElementById('m-user').style.display = 'none';
+        }
+
+        function pedirUsuario() { document.getElementById('m-user').style.display = 'flex'; }
+
+        db.ref('/v6').on('value', (s) => {
             store = s.val();
             if(!store) {
                 const init = [
@@ -96,18 +115,18 @@
                     { id: 4, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" },
                     { id: 5, nombre: "Bebida", precio: 2000, cant: 30, icon: "🥤" }
                 ];
-                db.ref('/v5').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
+                db.ref('/v6').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
             } else { draw(); }
         });
 
         function draw() {
             const m = document.getElementById('menu'); m.innerHTML = '';
             store.stock.forEach(p => {
-                m.innerHTML += `<div onclick="abrirOpciones(${p.id})" class="btn-prod p-5 rounded-[30px] shadow-xl tap text-center">
+                m.innerHTML += `<div onclick="abrirOpciones(${p.id})" class="bg-zinc-900 p-5 rounded-[30px] border border-white/5 tap text-center">
                     <div class="text-5xl mb-2">${p.icon}</div>
-                    <div class="text-[11px] font-black uppercase text-zinc-300 leading-none h-4 mb-1">${p.nombre}</div>
+                    <div class="text-[11px] font-black uppercase text-zinc-300 leading-none mb-1">${p.nombre}</div>
                     <div class="text-orange-500 font-black text-lg font-mono">$ ${f(p.precio)}</div>
-                    <div class="text-[8px] text-green-500 font-bold mt-2 uppercase">Stock: ${p.cant}</div>
+                    <div class="text-[8px] text-green-500 font-bold mt-2 uppercase italic">Disp: ${p.cant}</div>
                 </div>`;
             });
             document.getElementById('v-base').innerText = "$ " + f(store.base);
@@ -118,14 +137,14 @@
 
         function abrirOpciones(id) {
             let p = store.stock.find(x => x.id === id);
-            if(p.cant <= 0) return alert("❌ SIN STOCK");
+            if(p.cant <= 0) return alert("❌ PRODUCTO AGOTADO");
             if(p.sub) {
                 tempProd = p;
                 document.getElementById('opt-titulo').innerText = p.nombre;
                 const container = document.getElementById('opt-container');
                 container.innerHTML = '';
                 p.sub.forEach(sub => {
-                    container.innerHTML += `<button onclick="sumarFinal('${sub}')" class="bg-zinc-800 py-6 rounded-2xl text-xl font-black tap border-b-4 border-black uppercase text-white">${sub}</button>`;
+                    container.innerHTML += `<button onclick="sumarFinal('${sub}')" class="bg-zinc-800 py-6 rounded-2xl text-xl font-black tap border-b-4 border-black uppercase">${sub}</button>`;
                 });
                 document.getElementById('m-opciones').style.display = 'flex';
             } else { sumarDirecto(p, p.precio, p.nombre); }
@@ -146,30 +165,46 @@
         function doCobro() {
             if(pedido === 0) return;
             const h = store.h_ventas || [];
-            listaPedido.forEach(item => h.push({ n: item.nombre, v: item.precio, t: new Date().toLocaleTimeString() }));
+            listaPedido.forEach(item => h.push({ 
+                n: item.nombre, 
+                v: item.precio, 
+                u: usuarioActual, 
+                t: new Date().toLocaleTimeString() 
+            }));
             
-            db.ref('/v5').update({ ventas: store.ventas + pedido, stock: store.stock, h_ventas: h }).then(() => {
-                const msg = `🧾 *NIZA POS*\n-----------\n${listaPedido.map(i=>`- ${i.nombre}: $${f(i.precio)}`).join('\n')}\n-----------\n*TOTAL: $${f(pedido)}*`;
-                if(confirm("¿Enviar recibo por WhatsApp?")) {
-                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-                }
+            db.ref('/v6').update({ ventas: store.ventas + pedido, stock: store.stock, h_ventas: h }).then(() => {
+                const msg = `🧾 *NIZA POS*\n*Atendido por:* ${usuarioActual}\n-----------\n${listaPedido.map(i=>`- ${i.nombre}: $${f(i.precio)}`).join('\n')}\n-----------\n*TOTAL: $${f(pedido)}*`;
+                if(confirm("¿WhatsApp?")) window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
                 pedido = 0; listaPedido = []; 
                 document.getElementById('t-ped').innerText = "$ 0";
             });
         }
 
+        function abrirGasto() {
+            const v = parseInt(prompt("VALOR DEL GASTO:"));
+            const d = prompt("DESCRIPCIÓN DEL GASTO:");
+            if(!v || !d) return;
+            const h = store.h_gastos || [];
+            h.push({ v, d, u: usuarioActual, t: new Date().toLocaleTimeString() });
+            db.ref('/v6').update({ gastos: (store.gastos || 0) + v, h_gastos: h });
+        }
+
         function verRepo() {
-            let res = {};
-            if(store.h_ventas) store.h_ventas.forEach(v => res[v.n] = (res[v.n] || 0) + 1);
-            let texto = `📊 REPORTE DE VENTAS:\n\n`;
-            for(let k in res) texto += `${k}: ${res[k]} und\n`;
+            let resU = {};
+            if(store.h_ventas) {
+                store.h_ventas.forEach(v => {
+                    resU[v.u] = (resU[v.u] || 0) + v.v;
+                });
+            }
+            let texto = `📊 CIERRE POR USUARIO:\n\n`;
+            for(let u in resU) texto += `👤 ${u}: $${f(resU[u])}\n`;
             texto += `\n💰 TOTAL VENTAS: $${f(store.ventas)}\n💸 GASTOS: $${f(store.gastos)}`;
             alert(texto);
-            if(confirm("¿CERRAR DÍA? (Se borrará el historial de hoy)")) db.ref('/v5').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
+            if(confirm("¿CERRAR DÍA?")) db.ref('/v6').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
         }
 
         function accesoAdmin() {
-            if(prompt("CLAVE:") === CLAVE) {
+            if(prompt("CLAVE ADMIN:") === CLAVE) {
                 document.getElementById('m-admin').style.display='flex';
                 actAdmin();
             }
@@ -177,11 +212,12 @@
 
         function actAdmin() {
             const c = document.getElementById('a-items'); c.innerHTML = '';
+            document.getElementById('a-base').value = store.base;
             store.stock.forEach((p, i) => {
-                c.innerHTML += `<div class="bg-black/40 p-3 rounded-2xl border border-white/5 flex items-center justify-between">
+                c.innerHTML += `<div class="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
                     <div>
                         <div class="text-[10px] font-black text-yellow-500 uppercase">${p.nombre}</div>
-                        <div class="text-xs text-white font-mono">$${f(p.precio)} | Disp: ${p.cant}</div>
+                        <div class="text-xs text-white font-mono">Stock: ${p.cant}</div>
                     </div>
                     <div class="flex gap-1">
                         <button onclick="addStock(${i}, 10)" class="bg-green-600 px-3 py-2 rounded-lg text-xs font-black">+10</button>
@@ -191,13 +227,10 @@
             });
         }
 
-        function addStock(idx, cant) {
-            store.stock[idx].cant += cant;
-            actAdmin();
-        }
+        function addStock(idx, cant) { store.stock[idx].cant += cant; actAdmin(); }
 
         function saveAdmin() {
-            db.ref('/v5').update({ base: parseInt(document.getElementById('a-base').value) || 0, stock: store.stock }).then(() => {
+            db.ref('/v6').update({ base: parseInt(document.getElementById('a-base').value) || 0, stock: store.stock }).then(() => {
                 document.getElementById('m-admin').style.display='none';
             });
         }
