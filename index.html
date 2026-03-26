@@ -3,85 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NIZA POS V3</title>
+    <title>DELICIAS NIZA PRO</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tap:active { transform: scale(0.9); opacity: 0.7; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; align-items: center; justify-content: center; }
-        body { -webkit-tap-highlight-color: transparent; background-color: #000; color: white; }
+        .tap:active { transform: scale(0.92); opacity: 0.6; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; align-items: center; justify-content: center; }
+        body { -webkit-tap-highlight-color: transparent; background-color: #080808; color: white; font-family: sans-serif; }
+        .btn-prod { background: linear-gradient(145deg, #1a1a1a, #0a0a0a); border: 1px solid #333; }
     </style>
 </head>
-<body>
+<body class="pb-40">
 
-    <header class="bg-red-800 p-4 sticky top-0 border-b-2 border-yellow-500 shadow-2xl z-50">
+    <header class="bg-gradient-to-r from-red-800 to-orange-600 p-4 sticky top-0 shadow-2xl z-50 border-b-4 border-yellow-500">
         <div class="flex justify-between items-center mb-2">
-            <h1 class="font-black italic text-yellow-400 text-xl uppercase">NIZA POS</h1>
+            <div>
+                <h1 class="font-black italic text-white text-2xl leading-none">DELICIAS NIZA</h1>
+                <span class="text-[10px] text-yellow-200 font-bold tracking-[3px] uppercase">Punto de Venta</span>
+            </div>
             <div class="flex gap-2">
-                <button onclick="document.getElementById('m-admin').style.display='flex'; actAdmin();" class="bg-yellow-500 text-black px-4 py-1 rounded-lg font-black text-[10px]">ADMIN</button>
-                <button onclick="verRepo()" class="bg-white/10 px-4 py-1 rounded-lg font-black text-[10px]">CIERRE</button>
+                <button onclick="accesoAdmin()" class="bg-black/50 p-2 rounded-full tap text-xl">⚙️</button>
+                <button onclick="verRepo()" class="bg-yellow-400 text-black px-3 py-1 rounded-lg font-black text-xs tap uppercase">Cierre</button>
             </div>
         </div>
-        <div class="grid grid-cols-4 gap-1 text-[8px] text-center font-bold uppercase">
-            <div class="bg-black/40 p-1 rounded">Base<br><span id="v-base" class="text-blue-300 font-mono text-[10px]">$ 0</span></div>
-            <div class="bg-black/40 p-1 rounded">Ventas<br><span id="v-ventas" class="text-green-400 font-mono text-[10px]">$ 0</span></div>
-            <div class="bg-black/40 p-1 rounded">Gastos<br><span id="v-gastos" class="text-red-400 font-mono text-[10px]">$ 0</span></div>
-            <div class="bg-orange-500/20 p-1 rounded border border-orange-500 text-yellow-300 font-black">Caja<br>$ <span id="v-total" class="text-[10px]">0</span></div>
+        <div class="grid grid-cols-4 gap-1 text-[8px] text-center font-bold">
+            <div class="bg-black/30 p-1 rounded">Base<br><span id="v-base" class="text-white font-mono text-sm">$ 0</span></div>
+            <div class="bg-black/30 p-1 rounded">Ventas<br><span id="v-ventas" class="text-green-300 font-mono text-sm">$ 0</span></div>
+            <div class="bg-black/30 p-1 rounded">Gastos<br><span id="v-gastos" class="text-red-300 font-mono text-sm">$ 0</span></div>
+            <div class="bg-yellow-400 p-1 rounded text-black shadow-lg">Caja<br><span id="v-total" class="font-mono text-sm">$ 0</span></div>
         </div>
     </header>
 
     <main id="menu" class="p-4 grid grid-cols-2 gap-4"></main>
 
     <div id="m-opciones" class="modal px-6">
-        <div class="bg-zinc-900 p-8 rounded-[40px] w-full text-center border-2 border-zinc-700 shadow-2xl">
-            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-8 uppercase text-2xl italic">¿CÓMO VA?</h2>
-            <div class="flex flex-col gap-5">
-                <button onclick="sumarConOpcion('papa')" class="bg-slate-700 py-8 rounded-3xl text-2xl font-black tap border-b-4 border-slate-900 uppercase">🥔 Con Papa</button>
-                <button onclick="sumarConOpcion('patacon')" class="bg-orange-700 py-8 rounded-3xl text-2xl font-black tap border-b-4 border-orange-900 text-orange-100 uppercase">🍌 Con Patacón</button>
-            </div>
-            <button onclick="cerrarOpciones()" class="mt-8 text-zinc-500 font-bold uppercase p-4">Regresar</button>
+        <div class="bg-zinc-900 p-6 rounded-[40px] w-full max-w-sm border-2 border-orange-500 shadow-[0_0_50px_rgba(234,88,12,0.3)]">
+            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-6 uppercase text-2xl italic italic">¿Qué sabor?</h2>
+            <div id="opt-container" class="grid grid-cols-1 gap-3"></div>
+            <button onclick="cerrarOpciones()" class="mt-6 text-zinc-500 font-bold uppercase text-xs">Cerrar</button>
         </div>
     </div>
 
-    <div id="m-domi" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-full text-center border border-zinc-700">
-        <h2 class="text-blue-400 font-black mb-4 uppercase">Valor Domicilio</h2>
-        <input type="number" id="domi-v" placeholder="$ 0" class="w-full bg-zinc-800 p-5 rounded-2xl mb-6 text-white text-center text-4xl font-mono outline-none border-2 border-blue-900">
-        <button onclick="addDomi()" class="w-full bg-blue-600 py-5 rounded-2xl font-black tap mb-2 uppercase">SUMAR 🛵</button>
-        <button onclick="document.getElementById('m-domi').style.display='none'" class="text-zinc-500 font-bold py-2 uppercase text-xs">Cerrar</button>
-    </div></div>
-
-    <div id="m-gasto" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-full text-center border border-zinc-700">
-        <h2 class="text-red-500 font-black mb-4 uppercase">Nuevo Gasto</h2>
-        <input type="number" id="g-v" placeholder="$ 0" class="w-full bg-zinc-800 p-5 rounded-2xl mb-2 text-white text-center text-3xl font-mono outline-none border-2 border-red-900">
-        <input type="text" id="g-d" placeholder="¿En qué?" class="w-full bg-zinc-800 p-5 rounded-2xl mb-6 text-white text-center uppercase font-black outline-none">
-        <button onclick="saveGasto()" class="w-full bg-red-600 py-5 rounded-2xl font-black tap mb-2 uppercase">GUARDAR 💸</button>
-        <button onclick="document.getElementById('m-gasto').style.display='none'" class="text-zinc-500 font-bold py-2 uppercase text-xs">Cerrar</button>
-    </div></div>
-
-    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-6 rounded-[30px] w-full max-h-[85vh] flex flex-col border border-zinc-700">
-        <h2 class="text-yellow-500 font-black text-center mb-4 uppercase">INVENTARIO</h2>
-        <input type="number" id="a-base" class="w-full bg-zinc-800 p-4 rounded-xl mb-4 text-center text-2xl font-mono text-white outline-none">
-        <div id="a-items" class="overflow-y-auto flex-1 mb-4 space-y-2"></div>
+    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-6 rounded-[35px] w-full max-w-md max-h-[85vh] flex flex-col border border-zinc-700">
+        <h2 class="text-orange-500 font-black text-center mb-4 uppercase text-xl">Control de Inventario</h2>
+        <div class="mb-4">
+            <label class="text-[10px] text-zinc-500 uppercase font-bold pl-2">Base de Caja Inicial</label>
+            <input type="number" id="a-base" class="w-full bg-zinc-800 p-3 rounded-xl text-xl text-white outline-none border border-zinc-700">
+        </div>
+        <div id="a-items" class="overflow-y-auto flex-1 space-y-3 mb-4 pr-1"></div>
         <div class="flex gap-2">
-            <button onclick="document.getElementById('m-admin').style.display='none'" class="flex-1 bg-zinc-800 py-5 rounded-2xl text-xs font-black uppercase">Salir</button>
-            <button onclick="saveAdmin()" class="flex-1 bg-green-600 py-5 rounded-2xl text-xs font-black uppercase">Guardar ✅</button>
+            <button onclick="document.getElementById('m-admin').style.display='none'" class="flex-1 bg-zinc-800 py-4 rounded-2xl text-xs font-black">SALIR</button>
+            <button onclick="saveAdmin()" class="flex-1 bg-orange-600 py-4 rounded-2xl text-xs font-black shadow-xl">GUARDAR CAMBIOS ✅</button>
         </div>
     </div></div>
 
-    <footer class="fixed bottom-0 left-0 right-0 bg-white p-6 flex justify-between items-center z-50 rounded-t-[50px] shadow-[0_-10px_50px_rgba(0,0,0,0.8)]">
-        <div class="pl-2">
-            <span class="text-zinc-400 text-[10px] block uppercase font-black italic mb-1">Total Pedido</span>
-            <span id="t-ped" class="text-5xl font-black text-black font-mono italic tracking-tighter leading-none">$ 0</span>
+    <footer class="fixed bottom-0 left-0 right-0 bg-white p-5 flex justify-between items-center z-50 rounded-t-[45px] shadow-[0_-10px_40px_rgba(0,0,0,0.6)]">
+        <div>
+            <span class="text-zinc-400 text-[10px] block uppercase font-black mb-1">Total Pedido:</span>
+            <span id="t-ped" class="text-5xl font-black text-black font-mono italic leading-none">$ 0</span>
         </div>
-        <div class="flex gap-3">
-            <button onclick="document.getElementById('m-domi').style.display='flex'" class="bg-blue-50 text-blue-600 w-14 h-18 rounded-2xl text-3xl tap flex items-center justify-center border border-blue-200 shadow-sm">🛵</button>
-            <button onclick="document.getElementById('m-gasto').style.display='flex'" class="bg-red-50 text-red-600 w-14 h-18 rounded-2xl text-3xl tap flex items-center justify-center border border-red-200 shadow-sm">💸</button>
-            <button onclick="doCobro()" class="bg-green-600 text-white w-24 h-22 rounded-[35px] text-5xl tap shadow-xl flex items-center justify-center font-black">💰</button>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('m-gasto').style.display='flex'" class="bg-red-50 text-red-600 w-12 h-14 rounded-2xl text-2xl tap flex items-center justify-center border border-red-100 font-bold italic">💸</button>
+            <button onclick="doCobro()" class="bg-green-600 text-white w-24 h-20 rounded-[30px] text-5xl tap shadow-2xl flex items-center justify-center font-black italic border-b-4 border-green-800">💰</button>
         </div>
     </footer>
 
     <script>
+        const CLAVE = "1234";
         const cfg = {
             apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs",
             authDomain: "delicias--niza.firebaseapp.com",
@@ -93,125 +82,127 @@
         };
         firebase.initializeApp(cfg);
         const db = firebase.database();
-        let store = null; let pedido = 0; let tempProd = null;
+        let store = null, pedido = 0, tempProd = null, listaPedido = [];
 
         const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
 
-        // NODO NUEVO "V3" PARA EVITAR EL CACHÉ
-        db.ref('/v3').on('value', (s) => {
+        db.ref('/v5').on('value', (s) => {
             store = s.val();
             if(!store) {
-                const menu = [
-                    { id: 1, nombre: "Empanada", precio: 4000, cant: 50, icon: "🥟", opt: false },
-                    { id: 2, nombre: "Rellena", precio: 7000, cant: 20, icon: "🍖", opt: true },
-                    { id: 3, nombre: "Pincho", precio: 8000, cant: 20, icon: "🍢", opt: true },
-                    { id: 4, nombre: "Fresas Crema", precio: 14000, cant: 15, icon: "🍓", opt: false },
-                    { id: 5, nombre: "Limonada", precio: 1000, cant: 25, icon: "🥤", opt: false }
+                const init = [
+                    { id: 1, nombre: "Empanada", precio: 4000, cant: 50, icon: "🥟", sub: ["Carne", "Pollo", "Queso"] },
+                    { id: 2, nombre: "Rellena", precio: 7000, cant: 20, icon: "🍖", sub: ["Con Papa", "Con Patacón"] },
+                    { id: 3, nombre: "Pincho", precio: 8000, cant: 20, icon: "🍢", sub: ["Con Papa", "Con Patacón"] },
+                    { id: 4, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" },
+                    { id: 5, nombre: "Bebida", precio: 2000, cant: 30, icon: "🥤" }
                 ];
-                db.ref('/v3').set({ base: 0, ventas: 0, gastos: 0, stock: menu, h: [] });
+                db.ref('/v5').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
             } else { draw(); }
         });
 
         function draw() {
             const m = document.getElementById('menu'); m.innerHTML = '';
             store.stock.forEach(p => {
-                m.innerHTML += `<div onclick="intentarSumar(${p.id})" class="bg-zinc-900 p-5 rounded-[35px] border border-white/5 shadow-2xl tap text-center">
+                m.innerHTML += `<div onclick="abrirOpciones(${p.id})" class="btn-prod p-5 rounded-[30px] shadow-xl tap text-center">
                     <div class="text-5xl mb-2">${p.icon}</div>
-                    <div class="text-[10px] font-black uppercase text-white/50 mb-1 leading-none h-4">${p.nombre}</div>
-                    <div class="text-orange-400 font-black text-sm font-mono">$ ${f(p.precio)}</div>
-                    <div class="text-[8px] text-green-500 uppercase mt-2 font-bold">Stock: ${p.cant}</div>
+                    <div class="text-[11px] font-black uppercase text-zinc-300 leading-none h-4 mb-1">${p.nombre}</div>
+                    <div class="text-orange-500 font-black text-lg font-mono">$ ${f(p.precio)}</div>
+                    <div class="text-[8px] text-green-500 font-bold mt-2 uppercase">Stock: ${p.cant}</div>
                 </div>`;
             });
             document.getElementById('v-base').innerText = "$ " + f(store.base);
             document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
             document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
-            document.getElementById('v-total').innerText = f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
+            document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
         }
 
-        function intentarSumar(id) {
+        function abrirOpciones(id) {
             let p = store.stock.find(x => x.id === id);
-            if(p.cant <= 0) return alert("SIN STOCK");
-            if(p.opt) {
+            if(p.cant <= 0) return alert("❌ SIN STOCK");
+            if(p.sub) {
                 tempProd = p;
                 document.getElementById('opt-titulo').innerText = p.nombre;
+                const container = document.getElementById('opt-container');
+                container.innerHTML = '';
+                p.sub.forEach(sub => {
+                    container.innerHTML += `<button onclick="sumarFinal('${sub}')" class="bg-zinc-800 py-6 rounded-2xl text-xl font-black tap border-b-4 border-black uppercase text-white">${sub}</button>`;
+                });
                 document.getElementById('m-opciones').style.display = 'flex';
-            } else { sumarDirecto(p, p.precio); }
+            } else { sumarDirecto(p, p.precio, p.nombre); }
         }
 
-        function sumarConOpcion(tipo) {
-            let pFinal = tempProd.precio;
-            if(tipo === 'patacon') pFinal += 1000;
-            sumarDirecto(tempProd, pFinal);
+        function sumarFinal(sub) {
+            let pExtra = (sub === 'Con Patacón') ? 1000 : 0;
+            sumarDirecto(tempProd, tempProd.precio + pExtra, `${tempProd.nombre} (${sub})`);
             cerrarOpciones();
         }
 
-        function sumarDirecto(p, precio) {
+        function sumarDirecto(p, precio, nombreFull) {
             pedido += precio; p.cant--;
+            listaPedido.push({ nombre: nombreFull, precio: precio });
             document.getElementById('t-ped').innerText = "$ " + f(pedido);
-        }
-
-        function cerrarOpciones() { document.getElementById('m-opciones').style.display = 'none'; tempProd = null; }
-
-        function addDomi() {
-            pedido += parseInt(document.getElementById('domi-v').value) || 0;
-            document.getElementById('t-ped').innerText = "$ " + f(pedido);
-            document.getElementById('m-domi').style.display='none';
-            document.getElementById('domi-v').value = '';
         }
 
         function doCobro() {
             if(pedido === 0) return;
-            db.ref('/v3').update({ ventas: store.ventas + pedido, stock: store.stock }).then(() => {
-                pedido = 0; document.getElementById('t-ped').innerText = "$ 0";
-                alert("COBRADO ✅");
+            const h = store.h_ventas || [];
+            listaPedido.forEach(item => h.push({ n: item.nombre, v: item.precio, t: new Date().toLocaleTimeString() }));
+            
+            db.ref('/v5').update({ ventas: store.ventas + pedido, stock: store.stock, h_ventas: h }).then(() => {
+                const msg = `🧾 *NIZA POS*\n-----------\n${listaPedido.map(i=>`- ${i.nombre}: $${f(i.precio)}`).join('\n')}\n-----------\n*TOTAL: $${f(pedido)}*`;
+                if(confirm("¿Enviar recibo por WhatsApp?")) {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+                }
+                pedido = 0; listaPedido = []; 
+                document.getElementById('t-ped').innerText = "$ 0";
             });
         }
 
-        function saveGasto() {
-            const v = parseInt(document.getElementById('g-v').value);
-            if(!v) return;
-            const h = store.h || []; h.push({ v, d: document.getElementById('g-d').value || 'Gasto', t: new Date().toLocaleTimeString() });
-            db.ref('/v3').update({ gastos: (store.gastos || 0) + v, h: h }).then(() => {
-                document.getElementById('m-gasto').style.display='none';
-                document.getElementById('g-v').value=''; document.getElementById('g-d').value='';
-            });
+        function verRepo() {
+            let res = {};
+            if(store.h_ventas) store.h_ventas.forEach(v => res[v.n] = (res[v.n] || 0) + 1);
+            let texto = `📊 REPORTE DE VENTAS:\n\n`;
+            for(let k in res) texto += `${k}: ${res[k]} und\n`;
+            texto += `\n💰 TOTAL VENTAS: $${f(store.ventas)}\n💸 GASTOS: $${f(store.gastos)}`;
+            alert(texto);
+            if(confirm("¿CERRAR DÍA? (Se borrará el historial de hoy)")) db.ref('/v5').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
+        }
+
+        function accesoAdmin() {
+            if(prompt("CLAVE:") === CLAVE) {
+                document.getElementById('m-admin').style.display='flex';
+                actAdmin();
+            }
         }
 
         function actAdmin() {
-            const c = document.getElementById('a-items'); document.getElementById('a-base').value = store.base;
-            c.innerHTML = '';
+            const c = document.getElementById('a-items'); c.innerHTML = '';
             store.stock.forEach((p, i) => {
-                c.innerHTML += `<div class="bg-black/50 p-4 rounded-2xl border border-white/5 mb-2">
-                    <div class="flex justify-between mb-2">
-                         <input type="text" id="n-${i}" value="${p.nombre}" class="bg-transparent text-yellow-400 font-black uppercase text-xs">
-                         <label class="text-[8px]">OPT? <input type="checkbox" id="o-${i}" ${p.opt?'checked':''}></label>
+                c.innerHTML += `<div class="bg-black/40 p-3 rounded-2xl border border-white/5 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-black text-yellow-500 uppercase">${p.nombre}</div>
+                        <div class="text-xs text-white font-mono">$${f(p.precio)} | Disp: ${p.cant}</div>
                     </div>
-                    <div class="flex gap-2">
-                        <input type="number" id="p-${i}" value="${p.precio}" class="w-1/2 bg-zinc-800 p-2 rounded-xl text-xs text-orange-400 text-center font-mono">
-                        <input type="number" id="ac-${i}" value="${p.cant}" class="w-1/2 bg-zinc-800 p-2 rounded-xl text-xs text-green-400 text-center font-mono">
+                    <div class="flex gap-1">
+                        <button onclick="addStock(${i}, 10)" class="bg-green-600 px-3 py-2 rounded-lg text-xs font-black">+10</button>
+                        <button onclick="addStock(${i}, -10)" class="bg-red-900 px-3 py-2 rounded-lg text-xs font-black">-10</button>
                     </div>
                 </div>`;
             });
         }
 
+        function addStock(idx, cant) {
+            store.stock[idx].cant += cant;
+            actAdmin();
+        }
+
         function saveAdmin() {
-            const ns = store.stock.map((p, i) => ({
-                ...p, nombre: document.getElementById(`n-${i}`).value,
-                opt: document.getElementById(`o-${i}`).checked,
-                precio: parseInt(document.getElementById(`p-${i}`).value) || 0,
-                cant: parseInt(document.getElementById(`ac-${i}`).value) || 0
-            }));
-            db.ref('/v3').update({ base: parseInt(document.getElementById('a-base').value) || 0, stock: ns }).then(() => {
+            db.ref('/v5').update({ base: parseInt(document.getElementById('a-base').value) || 0, stock: store.stock }).then(() => {
                 document.getElementById('m-admin').style.display='none';
             });
         }
 
-        function verRepo() {
-            let l = `REPORTE:\nTotal: $ ${f(store.base + store.ventas - store.gastos)}\n\nGASTOS:\n`;
-            if(store.h) store.h.forEach(g => l += `- ${g.d}: $ ${f(g.v)}\n`);
-            alert(l);
-            if(confirm("¿CERRAR DÍA?")) db.ref('/v3').update({ ventas: 0, gastos: 0, h: [] });
-        }
+        function cerrarOpciones() { document.getElementById('m-opciones').style.display = 'none'; }
     </script>
 </body>
 </html>
