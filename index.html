@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NIZA POS PRO</title>
+    <title>NIZA POS V12 - SABORES</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,55 +12,62 @@
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; align-items: center; justify-content: center; }
         body { background-color: #000; color: white; user-select: none; font-family: sans-serif; overflow-x: hidden; }
         main { padding-bottom: 120px; }
-        input { border: 1px solid #444 !important; }
     </style>
 </head>
 <body>
 
     <header class="bg-red-800 p-3 sticky top-0 shadow-2xl z-50 border-b-2 border-yellow-500">
         <div class="flex justify-between items-center mb-1">
-            <h1 class="font-black italic text-white text-lg uppercase tracking-tighter text-yellow-500">NIZA POS PRO</h1>
+            <h1 class="font-black italic text-white text-lg uppercase tracking-tighter text-yellow-500">NIZA PRO V12</h1>
             <div class="flex gap-2">
                 <button onclick="accesoAdmin()" class="bg-black/40 p-2 rounded-lg text-lg tap">⚙️</button>
-                <button onclick="verRepo()" class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-black text-[10px] tap uppercase">Cierre Detallado</button>
+                <button onclick="verRepo()" class="bg-yellow-500 text-black px-3 py-1 rounded-lg font-black text-[10px] tap uppercase">Cierre</button>
             </div>
         </div>
         <div class="grid grid-cols-4 gap-1 text-[7px] text-center font-bold uppercase italic">
-            <div class="bg-black/50 p-1 rounded text-green-400 font-mono italic">Ventas<br><span id="v-ventas" class="text-[11px]">$ 0</span></div>
-            <div class="bg-black/50 p-1 rounded text-red-400 font-mono italic">Gastos<br><span id="v-gastos" class="text-[11px]">$ 0</span></div>
-            <div class="bg-orange-600 p-1 rounded text-white shadow-lg">Caja<br><span id="v-total" class="text-[11px]">$ 0</span></div>
-            <div class="bg-black/50 p-1 rounded text-blue-300 font-mono italic">Base<br><span id="v-base" class="text-[11px]">$ 0</span></div>
+            <div class="bg-black/50 p-1 rounded text-green-400">Ventas<br><span id="v-ventas" class="text-[11px] font-mono">$ 0</span></div>
+            <div class="bg-black/50 p-1 rounded text-red-400">Gastos<br><span id="v-gastos" class="text-[11px] font-mono">$ 0</span></div>
+            <div class="bg-orange-600 p-1 rounded text-white shadow-lg font-black">Caja<br><span id="v-total" class="text-[11px] font-mono">$ 0</span></div>
+            <div class="bg-black/50 p-1 rounded text-blue-300">Base<br><span id="v-base" class="text-[11px] font-mono">$ 0</span></div>
         </div>
     </header>
 
     <main id="menu" class="p-4 grid grid-cols-2 gap-4">
-        <p class="col-span-2 text-center py-10 text-zinc-600 animate-pulse">Cargando sistema...</p>
+        <p class="col-span-2 text-center py-10 text-zinc-600">Cargando sabores...</p>
     </main>
 
     <div id="m-user" class="modal" style="display: flex;">
         <div class="bg-zinc-900 p-8 rounded-[40px] w-full max-w-sm border-2 border-yellow-500 text-center shadow-2xl">
             <h2 class="text-white font-black mb-8 text-2xl uppercase italic">Identificación</h2>
             <button onclick="setUsuario('Nelson')" class="w-full bg-orange-600 py-6 rounded-3xl text-2xl font-black mb-4 tap shadow-lg uppercase">Nelson</button>
-            <button onclick="setUsuario('Empleado')" class="w-full bg-zinc-800 py-6 rounded-3xl text-2xl font-black tap uppercase text-zinc-400 border-b-2 border-black">Empleado</button>
+            <button onclick="setUsuario('Empleado')" class="w-full bg-zinc-800 py-6 rounded-3xl text-2xl font-black tap uppercase text-zinc-400">Empleado</button>
+        </div>
+    </div>
+
+    <div id="m-opciones" class="modal px-6">
+        <div class="bg-zinc-900 p-6 rounded-[40px] w-full max-w-sm border-2 border-orange-500">
+            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-6 uppercase text-xl text-center italic">¿Qué sabor?</h2>
+            <div id="opt-container" class="flex flex-col gap-3"></div>
+            <button onclick="cerrarOpciones()" class="mt-8 text-zinc-500 font-bold uppercase text-xs w-full text-center underline">Regresar</button>
         </div>
     </div>
 
     <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-5 rounded-[35px] w-full max-w-md max-h-[85vh] flex flex-col border border-zinc-700 shadow-2xl">
-        <h2 class="text-yellow-500 font-black text-center mb-4 uppercase italic">Configuración de Inventario</h2>
+        <h2 class="text-yellow-500 font-black text-center mb-4 uppercase italic">Admin Inventario</h2>
         <div class="mb-4 bg-black/30 p-3 rounded-2xl">
-            <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Dinero Base Inicial ($)</label>
-            <input type="number" id="a-base" class="w-full bg-zinc-800 p-3 rounded-xl text-xl text-white font-mono text-center outline-none">
+            <label class="text-[10px] text-zinc-400 uppercase font-black">Base Inicial ($)</label>
+            <input type="number" id="a-base" class="w-full bg-zinc-800 p-2 rounded-xl text-xl text-white text-center outline-none border border-zinc-600">
         </div>
         <div id="a-items" class="overflow-y-auto flex-1 space-y-3 mb-4 pr-1"></div>
         <div class="grid grid-cols-2 gap-2">
             <button onclick="document.getElementById('m-admin').style.display='none'" class="bg-zinc-800 py-4 rounded-xl font-black uppercase text-xs">Cerrar</button>
-            <button onclick="saveAdmin()" class="bg-green-600 py-4 rounded-xl font-black uppercase text-xs shadow-lg">Guardar Cambios ✅</button>
+            <button onclick="saveAdmin()" class="bg-green-600 py-4 rounded-xl font-black uppercase text-xs shadow-lg">Guardar ✅</button>
         </div>
     </div></div>
 
     <footer class="fixed bottom-0 left-0 right-0 bg-white p-3 flex justify-between items-center z-50 rounded-t-[40px] shadow-2xl h-[95px]">
         <div class="pl-3">
-            <span class="text-zinc-400 text-[10px] block uppercase font-black mb-1 italic">Total Cobro:</span>
+            <span class="text-zinc-400 text-[10px] block uppercase font-black mb-1 italic">Total:</span>
             <span id="t-ped" class="text-4xl font-black text-black font-mono italic leading-none">$ 0</span>
         </div>
         <div class="flex gap-2 items-center">
@@ -83,24 +90,24 @@
         };
         firebase.initializeApp(cfg);
         const db = firebase.database();
-        let store = null, pedido = 0, listaPedido = [], usuarioActual = "---";
+        let store = null, pedido = 0, tempProd = null, listaPedido = [], usuarioActual = "---";
 
         const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
 
         function setUsuario(n) {
             usuarioActual = n;
             document.getElementById('m-user').style.display = 'none';
-            db.ref('/niza_vpro').on('value', (snap) => {
+            db.ref('/niza_v12').on('value', (snap) => {
                 store = snap.val();
                 if(!store) {
                     const init = [
-                        { id: 1, nombre: "Empanada", precio: 4000, cant: 50, icon: "🥟" },
-                        { id: 2, nombre: "Rellena", precio: 7000, cant: 20, icon: "🍖" },
-                        { id: 3, nombre: "Pincho", precio: 8000, cant: 20, icon: "🍢" },
+                        { id: 1, nombre: "Empanada", precio: 4000, cant: 50, icon: "🥟", sub: ["Carne", "Pollo", "Queso"] },
+                        { id: 2, nombre: "Rellena", precio: 7000, cant: 20, icon: "🍖", sub: ["Con Papa", "Con Patacón"] },
+                        { id: 3, nombre: "Pincho", precio: 8000, cant: 20, icon: "🍢", sub: ["Con Papa", "Con Patacón"] },
                         { id: 4, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" },
                         { id: 5, nombre: "Bebida", precio: 2000, cant: 30, icon: "🥤" }
                     ];
-                    db.ref('/niza_vpro').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
+                    db.ref('/niza_v12').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
                 } else { draw(); }
             });
         }
@@ -108,11 +115,11 @@
         function draw() {
             const m = document.getElementById('menu'); m.innerHTML = '';
             store.stock.forEach(p => {
-                m.innerHTML += `<div onclick="sumarDirecto(${p.id})" class="bg-zinc-900 p-5 rounded-[30px] tap text-center border border-white/5 shadow-xl">
+                m.innerHTML += `<div onclick="abrirOpciones(${p.id})" class="bg-zinc-900 p-5 rounded-[30px] tap text-center border border-white/5 shadow-xl">
                     <div class="text-4xl mb-1">${p.icon}</div>
                     <div class="text-[10px] font-black uppercase text-zinc-400 mb-1 leading-none">${p.nombre}</div>
                     <div class="text-orange-500 font-bold text-lg font-mono italic">$ ${f(p.precio)}</div>
-                    <div class="text-[8px] text-green-500 font-bold uppercase mt-1">Disp: ${p.cant}</div>
+                    <div class="text-[8px] text-green-500 font-bold uppercase mt-1 italic">Disp: ${p.cant}</div>
                 </div>`;
             });
             document.getElementById('v-base').innerText = "$ " + f(store.base);
@@ -121,16 +128,34 @@
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
         }
 
-        function sumarDirecto(id) {
+        function abrirOpciones(id) {
             let p = store.stock.find(x => x.id === id);
-            if(p.cant <= 0) return alert("PRODUCTO AGOTADO");
-            pedido += p.precio; p.cant--;
-            listaPedido.push({ n: p.nombre, v: p.precio });
+            if(p.cant <= 0) return alert("SIN STOCK");
+            if(p.sub) {
+                tempProd = p;
+                document.getElementById('opt-titulo').innerText = p.nombre;
+                const c = document.getElementById('opt-container'); c.innerHTML = '';
+                p.sub.forEach(s => {
+                    c.innerHTML += `<button onclick="sumarFinal('${s}')" class="bg-zinc-800 py-6 rounded-2xl text-xl font-black tap border-b-4 border-black uppercase text-white shadow-lg italic">${s}</button>`;
+                });
+                document.getElementById('m-opciones').style.display = 'flex';
+            } else { sumarDirecto(p, p.precio, p.nombre); }
+        }
+
+        function sumarFinal(sub) {
+            let extra = (sub === 'Con Patacón') ? 1000 : 0;
+            sumarDirecto(tempProd, tempProd.precio + extra, `${tempProd.nombre} (${sub})`);
+            cerrarOpciones();
+        }
+
+        function sumarDirecto(p, precio, nombreFull) {
+            pedido += precio; p.cant--;
+            listaPedido.push({ n: nombreFull, v: precio });
             document.getElementById('t-ped').innerText = "$ " + f(pedido);
         }
 
         function addDomi() {
-            const v = parseInt(prompt("VALOR DOMICILIO:"));
+            const v = parseInt(prompt("VALOR DOMI:"));
             if(v) { pedido += v; listaPedido.push({ n: "Domi", v: v }); document.getElementById('t-ped').innerText = "$ " + f(pedido); }
         }
 
@@ -138,16 +163,16 @@
             if(pedido === 0) return;
             const h = store.h_ventas || [];
             listaPedido.forEach(i => h.push({ n: i.n, v: i.v, u: usuarioActual, t: new Date().toLocaleTimeString() }));
-            db.ref('/niza_vpro').update({ ventas: store.ventas + pedido, stock: store.stock, h_ventas: h }).then(() => {
+            db.ref('/niza_v12').update({ ventas: store.ventas + pedido, stock: store.stock, h_ventas: h }).then(() => {
                 pedido = 0; listaPedido = []; document.getElementById('t-ped').innerText = "$ 0";
             });
         }
 
         function abrirGasto() {
-            const v = parseInt(prompt("VALOR GASTO:")); const d = prompt("¿DETALLE DEL GASTO?");
+            const v = parseInt(prompt("VALOR GASTO:")); const d = prompt("DETALLE:");
             if(v && d) {
-                const h = store.h_gastos || []; h.push({ v, d, u: usuarioActual });
-                db.ref('/niza_vpro').update({ gastos: (store.gastos || 0) + v, h_gastos: h });
+                const h = store.h_gastos || []; h.push({ v, d });
+                db.ref('/niza_v12').update({ gastos: (store.gastos || 0) + v, h_gastos: h });
             }
         }
 
@@ -155,21 +180,15 @@
             let res = {}, listaG = "";
             if(store.h_ventas) store.h_ventas.forEach(v => { res[v.n] = (res[v.n] || 0) + 1; });
             if(store.h_gastos) store.h_gastos.forEach(g => { listaG += `• ${g.d}: $${f(g.v)}\n`; });
-            
-            let t = `📊 REPORTE DE CIERRE\n\n🛍️ PRODUCTOS VENDIDOS:\n`;
-            for(let p in res) t += `• ${p}: ${res[p]} unidades\n`;
-            t += `\n💸 GASTOS REALIZADOS:\n${listaG || '• Ninguno'}`;
-            t += `\n----------------------\n💰 VENTAS: $${f(store.ventas)}\n❌ GASTOS: $${f(store.gastos)}\n💵 EN CAJA: $${f((store.base||0)+store.ventas-store.gastos)}`;
-            
+            let t = `📊 CIERRE DETALLADO\n\n🛍️ PRODUCTOS:\n`;
+            for(let p in res) t += `• ${p}: ${res[p]}\n`;
+            t += `\n💸 GASTOS:\n${listaG || 'Ninguno'}\n------------------\n💰 CAJA: $${f((store.base||0)+store.ventas-store.gastos)}`;
             alert(t);
-            if(confirm("¿CERRAR DÍA Y REINICIAR VENTAS?")) db.ref('/niza_vpro').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
+            if(confirm("¿CERRAR DÍA?")) db.ref('/niza_v12').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
         }
 
         function accesoAdmin() {
-            if(prompt("CLAVE ADMIN:") === CLAVE) {
-                document.getElementById('m-admin').style.display='flex';
-                actAdmin();
-            }
+            if(prompt("CLAVE:") === CLAVE) { document.getElementById('m-admin').style.display='flex'; actAdmin(); }
         }
 
         function actAdmin() {
@@ -177,29 +196,7 @@
             document.getElementById('a-base').value = store.base || 0;
             store.stock.forEach((p, i) => {
                 c.innerHTML += `<div class="bg-black/50 p-4 rounded-3xl border border-zinc-800">
-                    <input type="text" id="n-${i}" value="${p.nombre}" class="bg-transparent text-yellow-500 font-black uppercase text-xs mb-3 w-full outline-none">
+                    <p class="text-yellow-500 font-black uppercase text-[10px] mb-2">${p.nombre}</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><p class="text-[7px] text-zinc-500 mb-1 uppercase font-bold text-center">Precio ($)</p>
-                        <input type="number" id="p-${i}" value="${p.precio}" class="w-full bg-zinc-800 p-2 rounded-xl text-orange-400 text-center font-mono"></div>
-                        <div><p class="text-[7px] text-zinc-500 mb-1 uppercase font-bold text-center">Stock (Cant)</p>
-                        <input type="number" id="ac-${i}" value="${p.cant}" class="w-full bg-zinc-800 p-2 rounded-xl text-green-400 text-center font-mono"></div>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function saveAdmin() {
-            const ns = store.stock.map((p, i) => ({
-                ...p,
-                nombre: document.getElementById(`n-${i}`).value,
-                precio: parseInt(document.getElementById(`p-${i}`).value) || 0,
-                cant: parseInt(document.getElementById(`ac-${i}`).value) || 0
-            }));
-            db.ref('/niza_vpro').update({ base: parseInt(document.getElementById('a-base').value) || 0, stock: ns }).then(() => {
-                document.getElementById('m-admin').style.display='none';
-                alert("Inventario Actualizado ✅");
-            });
-        }
-    </script>
-</body>
-</html>
+                        <input type="number" id="p-${i}" value="${p.precio}" class="bg-zinc-800 p-2 rounded-xl text-orange-400 text-center font-mono">
+                        <input type="number" id="ac-${i}" value="${p.cant}" class
