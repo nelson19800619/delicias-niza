@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NIZA AUDITOR V23</title>
+    <title>NIZA CEL V24</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,107 +12,121 @@
         .tap:active { transform: scale(0.95); opacity: 0.8; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; align-items: center; justify-content: center; }
         body { background-color: #000; color: white; user-select: none; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-        .cabecera { height: 85px; background: #991b1b; border-bottom: 2px solid #eab308; display: flex; flex-direction: column; justify-content: center; padding: 0 10px; }
-        .cuerpo { display: flex; height: calc(100vh - 85px); }
-        .izquierda { width: 55%; border-right: 1px solid #333; overflow-y: auto; padding: 10px; background: #050505; }
-        .derecha { width: 45%; display: flex; flex-direction: column; background: #0a0a0a; padding: 10px; }
-        .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 6px; border-radius: 8px; margin-bottom: 4px; border-left: 3px solid #f97316; }
-        .font-mono { font-family: monospace; }
-        table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        th, td { border: 1px solid #333; padding: 4px; text-align: left; }
-        th { background: #222; color: #eab308; }
+        
+        /* Cabecera ajustada */
+        .cabecera { height: 80px; background: #991b1b; border-bottom: 2px solid #eab308; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
+        
+        /* Cuerpo principal */
+        .cuerpo { display: flex; height: calc(100vh - 80px); }
+        .izquierda { width: 55%; border-right: 1px solid #333; overflow-y: auto; padding: 6px; background: #050505; }
+        .derecha { width: 45%; display: flex; flex-direction: column; background: #0a0a0a; padding: 6px; position: relative; }
+
+        /* Carrito con scroll limitado para que no empuje los botones */
+        #lista-carrito { flex: 1 1 auto; overflow-y: auto; margin-bottom: 4px; border-bottom: 1px solid #222; }
+        
+        .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #161616; padding: 4px 6px; border-radius: 6px; margin-bottom: 3px; border-left: 2px solid #f97316; }
+        
+        /* Panel de botones inferior fijo */
+        .panel-cobro { flex: 0 0 auto; background: #0a0a0a; padding-top: 4px; }
+        
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        th, td { border: 1px solid #333; padding: 3px; text-align: left; }
     </style>
 </head>
 <body>
 
     <header class="cabecera">
         <div class="flex justify-between items-center mb-1">
-            <h1 class="font-black italic text-xs">DELICIAS NIZA V23</h1>
-            <div class="flex gap-1.5">
-                <button onclick="verConsultas()" class="bg-blue-600 px-2 py-1 rounded text-xs tap">📊</button>
-                <button onclick="verHistorial()" class="bg-black/40 px-2 py-1 rounded text-xs tap">🕒</button>
-                <button onclick="accesoAdmin()" class="bg-black/40 px-2 py-1 rounded text-xs tap">⚙️</button>
-                <button onclick="verRepoDetallado()" class="bg-yellow-500 text-black px-2 py-1 rounded font-black text-[10px] uppercase tap">Cierre</button>
+            <h1 class="font-black italic text-[11px] tracking-tighter">NIZA V24 PRO</h1>
+            <div class="flex gap-1">
+                <button onclick="verConsultas()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap font-bold">📊</button>
+                <button onclick="verHistorial()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap font-bold">🕒</button>
+                <button onclick="accesoAdmin()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap font-bold">⚙️</button>
+                <button onclick="verRepoDetallado()" class="bg-yellow-500 text-black px-2 py-1 rounded font-black text-[9px] tap uppercase">Cierre</button>
             </div>
         </div>
         <div class="grid grid-cols-4 gap-1 text-center">
-            <div class="bg-black/30 rounded p-1"><p class="text-[6px] uppercase text-zinc-300">Ventas</p><p id="v-ventas" class="text-[9px] font-bold text-green-400">$ 0</p></div>
-            <div class="bg-black/30 rounded p-1"><p class="text-[6px] uppercase text-zinc-300">Gastos</p><p id="v-gastos" class="text-[9px] font-bold text-red-400">$ 0</p></div>
-            <div class="bg-orange-600 rounded p-1 shadow-lg"><p class="text-[6px] uppercase text-white font-bold">Caja</p><p id="v-total" class="text-[10px] font-bold text-white">$ 0</p></div>
-            <div class="bg-black/30 rounded p-1"><p class="text-[6px] uppercase text-zinc-300">Base</p><p id="v-base" class="text-[9px] font-bold text-blue-300">$ 0</p></div>
+            <div class="bg-black/30 rounded py-0.5"><p class="text-[6px] uppercase text-zinc-400">Ventas</p><p id="v-ventas" class="text-[9px] font-bold text-green-400">$ 0</p></div>
+            <div class="bg-black/30 rounded py-0.5"><p class="text-[6px] uppercase text-zinc-400">Gastos</p><p id="v-gastos" class="text-[9px] font-bold text-red-400">$ 0</p></div>
+            <div class="bg-orange-600 rounded py-0.5"><p class="text-[6px] uppercase text-white font-bold">Caja</p><p id="v-total" class="text-[9px] font-bold text-white">$ 0</p></div>
+            <div class="bg-black/30 rounded py-0.5"><p class="text-[6px] uppercase text-zinc-400">Base</p><p id="v-base" class="text-[9px] font-bold text-blue-300">$ 0</p></div>
         </div>
     </header>
 
     <div class="cuerpo">
         <div class="izquierda">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded mb-3 border border-zinc-700 text-xs outline-none">
-            <div id="menu" class="grid grid-cols-2 gap-2"></div>
+            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded mb-2 border border-zinc-800 text-[10px] outline-none">
+            <div id="menu" class="grid grid-cols-2 gap-1.5"></div>
         </div>
 
         <div class="derecha">
-            <div class="flex justify-between text-[8px] text-zinc-500 font-bold mb-2 uppercase border-b border-zinc-800 pb-1">
+            <div class="flex justify-between text-[8px] text-zinc-500 font-bold mb-1 uppercase">
                 <span>🛒 Ticket</span>
-                <span>👤 <span id="u-act">---</span></span>
+                <span>👤 <span id="u-act" class="text-orange-400">---</span></span>
             </div>
-            <div id="lista-carrito" class="flex-1 overflow-y-auto pr-1"></div>
-            <div class="pt-2 border-t border-zinc-800">
-                <div class="flex justify-between items-end mb-2">
-                    <span class="text-[8px] font-bold">TOTAL:</span>
-                    <span id="t-ped" class="text-3xl font-black font-mono text-white leading-none tracking-tighter">$ 0</span>
+            
+            <div id="lista-carrito">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="grid grid-cols-2 gap-1">
-                        <button onclick="addDomi()" class="bg-zinc-800 text-blue-400 h-10 rounded-lg text-xl tap">🛵</button>
-                        <button onclick="abrirGasto()" class="bg-zinc-800 text-red-400 h-10 rounded-lg text-xl tap">💸</button>
-                        <button onclick="limpiarPedido()" class="col-span-2 bg-zinc-900 text-zinc-600 h-7 rounded text-[7px] uppercase font-bold tap">Vaciar</button>
-                    </div>
-                    <button onclick="irAPagar()" class="bg-green-600 text-white rounded-xl text-4xl tap font-black shadow-lg border-b-4 border-green-900">💰</button>
+
+            <div class="panel-cobro">
+                <div class="flex justify-between items-baseline mb-1">
+                    <span class="text-[8px] font-bold text-zinc-500 uppercase">Total:</span>
+                    <span id="t-ped" class="text-2xl font-black font-mono text-white leading-none">$ 0</span>
                 </div>
+                
+                <div class="flex gap-1 mb-1">
+                    <button onclick="addDomi()" class="flex-1 bg-zinc-800 text-blue-400 py-2 rounded-lg text-lg tap border border-zinc-700">🛵</button>
+                    <button onclick="abrirGasto()" class="flex-1 bg-zinc-800 text-red-400 py-2 rounded-lg text-lg tap border border-zinc-700">💸</button>
+                    <button onclick="limpiarPedido()" class="flex-1 bg-zinc-900 text-zinc-500 py-2 rounded-lg text-[7px] font-black uppercase tap border border-zinc-800">Borrar</button>
+                </div>
+                
+                <button onclick="irAPagar()" class="w-full bg-green-600 text-white py-3 rounded-xl text-3xl tap font-black shadow-lg border-b-4 border-green-900">💰 COBRAR</button>
             </div>
         </div>
     </div>
 
     <div id="m-cierre" class="modal px-4">
-        <div class="bg-zinc-900 p-4 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-yellow-600">
-            <h2 class="text-yellow-500 font-black text-center mb-2 uppercase italic text-sm">Cierre de Turno Detallado</h2>
-            <div id="cierre-info" class="text-[10px] mb-3 grid grid-cols-2 gap-2 bg-black/50 p-2 rounded border border-white/5"></div>
+        <div class="bg-zinc-900 p-4 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col border border-yellow-600">
+            <h2 class="text-yellow-500 font-black text-center mb-2 uppercase italic text-xs">Reporte de Cierre</h2>
+            <div id="cierre-info" class="text-[9px] mb-3 grid grid-cols-2 gap-2 bg-black/50 p-2 rounded"></div>
             <div class="overflow-y-auto flex-1 mb-3">
                 <table id="tabla-cierre">
-                    <thead><tr><th>Hora</th><th>Producto</th><th>Vendedor</th><th>$ Valor</th></tr></thead>
+                    <thead><tr><th>Hora</th><th>Item</th><th>Vend</th><th>$ Valor</th></tr></thead>
                     <tbody id="lista-cierre-det"></tbody>
                 </table>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="document.getElementById('m-cierre').style.display='none'" class="bg-zinc-800 py-3 rounded-xl font-bold uppercase text-[10px]">Seguir Vendiendo</button>
-                <button onclick="finalizarTurno()" class="bg-red-700 py-3 rounded-xl font-black uppercase text-[10px] shadow-lg">Reiniciar y Guardar</button>
+                <button onclick="document.getElementById('m-cierre').style.display='none'" class="bg-zinc-800 py-3 rounded-xl font-bold uppercase text-[10px]">Cerrar</button>
+                <button onclick="finalizarTurno()" class="bg-red-700 py-3 rounded-xl font-black uppercase text-[10px]">Reiniciar Turno</button>
             </div>
         </div>
     </div>
 
-    <div id="m-consultas" class="modal px-4">
-        <div class="bg-zinc-900 p-4 rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col border border-blue-600">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-blue-400 font-black uppercase text-sm">Consultar Ventas</h2>
-                <input type="date" id="filtro-fecha" onchange="cargarConsulta()" class="bg-zinc-800 p-1 rounded text-xs border border-blue-500">
+    <div id="m-consultas" class="modal px-2">
+        <div class="bg-zinc-900 p-3 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-blue-600">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-blue-400 font-black uppercase text-xs">Ventas Globales</h2>
+                <input type="date" id="filtro-fecha" onchange="cargarConsulta()" class="bg-zinc-800 p-1 rounded text-[10px] border border-blue-500">
             </div>
-            <div class="overflow-y-auto flex-1 mb-4">
+            <div class="overflow-y-auto flex-1 mb-3">
                 <table id="tabla-consulta">
-                    <thead><tr><th>Fecha/Hora</th><th>Producto</th><th>Vendedor</th><th>Pago</th><th>$ Valor</th></tr></thead>
+                    <thead><tr><th>Fecha/H</th><th>Item</th><th>Vend</th><th>Pago</th><th>$</th></tr></thead>
                     <tbody id="lista-consulta-det"></tbody>
                 </table>
             </div>
             <div class="flex gap-2">
-                <button onclick="exportarExcel()" class="flex-1 bg-green-700 py-3 rounded-xl font-black uppercase text-[10px]">Descargar Excel 📥</button>
-                <button onclick="document.getElementById('m-consultas').style.display='none'" class="flex-1 bg-zinc-800 py-3 rounded-xl font-bold uppercase text-[10px]">Cerrar</button>
+                <button onclick="exportarExcel()" class="flex-1 bg-green-700 py-3 rounded-xl font-black uppercase text-[9px]">Excel 📥</button>
+                <button onclick="document.getElementById('m-consultas').style.display='none'" class="flex-1 bg-zinc-800 py-3 rounded-xl font-bold uppercase text-[9px]">Salir</button>
             </div>
         </div>
     </div>
 
-    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase italic">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
-    <div id="m-pago" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-green-500 text-center"><h2 class="text-white font-black mb-6 uppercase text-sm italic">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-4 rounded-xl text-lg font-black mb-3 tap text-white shadow-lg">💵 Efectivo</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-4 rounded-xl text-lg font-black tap text-white shadow-lg">📱 Transferencia</button><button onclick="document.getElementById('m-pago').style.display='none'" class="mt-4 text-zinc-500 text-[10px] uppercase underline">Regresar</button></div></div>
-    <div id="m-opciones" class="modal px-6"><div class="bg-zinc-900 p-5 rounded-3xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center italic text-sm">Sabor</h2><div id="opt-c" class="flex flex-col gap-1.5"></div><button onclick="cerrarOpt()" class="mt-4 text-zinc-600 text-[9px] w-full text-center uppercase font-bold">Cancelar</button></div></div>
-    <div id="m-hist" class="modal px-4"><div class="bg-zinc-900 p-4 rounded-2xl w-80 max-h-[70vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-3 text-xs uppercase">Historial Turno</h2><div id="h-list" class="overflow-y-auto flex-1 space-y-1 text-[9px]"></div><button onclick="document.getElementById('m-hist').style.display='none'" class="bg-zinc-800 py-2 mt-3 rounded-lg text-white text-[10px] font-bold uppercase">Cerrar</button></div></div>
-    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-4 rounded-2xl w-80 max-h-[80vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-3 text-xs uppercase italic">Inventario</h2><div class="mb-2"><label class="text-[8px] text-zinc-500 font-bold uppercase">Base Caja $</label><input type="number" id="a-base" class="w-full bg-zinc-800 p-1 text-white text-center rounded text-sm outline-none border border-zinc-700"></div><div id="a-list" class="overflow-y-auto flex-1 space-y-1"></div><button onclick="saveAdmin()" class="bg-green-600 py-2 mt-3 rounded-lg text-white font-black text-[10px] uppercase">Guardar ✅</button></div></div>
+    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-5 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase italic text-sm">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
+    <div id="m-pago" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-green-500 text-center"><h2 class="text-white font-black mb-6 uppercase text-sm">Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-4 rounded-xl text-lg font-black mb-3 tap text-white shadow-lg">💵 Efectivo</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-4 rounded-xl text-lg font-black tap text-white shadow-lg">📱 Transferencia</button><button onclick="document.getElementById('m-pago').style.display='none'" class="mt-4 text-zinc-500 text-[10px] uppercase underline">Cerrar</button></div></div>
+    <div id="m-opciones" class="modal px-6"><div class="bg-zinc-900 p-4 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center italic text-xs">Sabor</h2><div id="opt-c" class="flex flex-col gap-1.5"></div><button onclick="cerrarOpt()" class="mt-4 text-zinc-600 text-[9px] w-full text-center uppercase font-bold">Cancelar</button></div></div>
+    <div id="m-hist" class="modal px-4"><div class="bg-zinc-900 p-3 rounded-xl w-72 max-h-[70vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-2 text-xs uppercase italic">Turno</h2><div id="h-list" class="overflow-y-auto flex-1 space-y-1 text-[9px]"></div><button onclick="document.getElementById('m-hist').style.display='none'" class="bg-zinc-800 py-2 mt-2 rounded-lg text-white text-[9px] font-bold uppercase">Cerrar</button></div></div>
+    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-4 rounded-2xl w-80 max-h-[80vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-3 text-[10px] uppercase italic">Admin Stock</h2><div class="mb-2"><label class="text-[8px] text-zinc-500 font-bold">BASE CAJA $</label><input type="number" id="a-base" class="w-full bg-zinc-800 p-1 text-white text-center rounded text-sm outline-none border border-zinc-700"></div><div id="a-list" class="overflow-y-auto flex-1 space-y-1"></div><button onclick="saveAdmin()" class="bg-green-600 py-2 mt-3 rounded-lg text-white font-black text-[10px] uppercase">Guardar ✅</button></div></div>
 
     <script>
         const CLAVE = "1234";
@@ -131,7 +145,6 @@
 
         const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
 
-        // Inicializar usuarios
         const users = ['Nelson', 'Jenny', 'Juan', 'Elizabeth', 'Valeria', 'Betty'];
         const uDiv = document.getElementById('user-btns');
         users.forEach(u => { uDiv.innerHTML += `<button onclick="setU('${u}')" class="bg-zinc-800 py-3 rounded-lg font-bold tap text-[10px] text-white uppercase">${u}</button>`; });
@@ -139,11 +152,11 @@
         function setU(n) {
             uAct = n; document.getElementById('m-user').style.display = 'none';
             document.getElementById('u-act').innerText = n;
-            db.ref('/niza_v23_audit').on('value', (snap) => {
+            db.ref('/niza_v24_fixed').on('value', (snap) => {
                 store = snap.val();
                 if(!store) {
                     const init = [{ id: 1, nombre: "Empanada", precio: 4000, cant: 0, icon: "🥟", sub: [{n: "Carne", c: 20}, {n: "Pollo Queso", c: 20}, {n: "Hawayana", c: 20}, {n: "Mixta Yuca", c: 20}]}, { id: 2, nombre: "Rellena", precio: 7000, cant: 0, icon: "🍖", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]}, { id: 3, nombre: "Pincho", precio: 8000, cant: 0, icon: "🍢", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]}, { id: 4, nombre: "Papa Rellena", precio: 4000, cant: 20, icon: "🥔" }, { id: 6, nombre: "Churro B&Q", precio: 4000, cant: 20, icon: "🥐" }, { id: 7, nombre: "Flauta P&Q", precio: 4000, cant: 20, icon: "🌯" }, { id: 8, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" }, { id: 9, nombre: "Bebida", precio: 1000, cant: 30, icon: "🥤" }];
-                    db.ref('/niza_v23_audit').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_v: [], h_g: [], global_v: [] });
+                    db.ref('/niza_v24_fixed').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_v: [], h_g: [], global_v: [] });
                 } else { draw(); }
             });
         }
@@ -155,11 +168,11 @@
             store.stock.forEach(p => {
                 if(filtro && !p.nombre.toLowerCase().includes(filtro)) return;
                 let tS = p.sub ? p.sub.reduce((a, b) => a + b.c, 0) : p.cant;
-                m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5 relative">
-                    <div class="text-xl mb-1">${p.icon}</div>
-                    <div class="text-[7px] font-black uppercase text-zinc-400 leading-none h-4 flex items-center justify-center">${p.nombre}</div>
-                    <div class="text-orange-500 font-bold text-xs">$ ${f(p.precio)}</div>
-                    <div class="text-[6px] text-green-500/60 font-bold mt-1 italic">Stock: ${tS}</div>
+                m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-1.5 rounded-lg tap text-center border border-white/5 relative">
+                    <div class="text-lg mb-0.5">${p.icon}</div>
+                    <div class="text-[7px] font-black uppercase text-zinc-400 leading-none h-3 flex items-center justify-center">${p.nombre}</div>
+                    <div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div>
+                    <div class="text-[5px] text-green-500/60 font-bold italic">S: ${tS}</div>
                 </div>`;
             });
             document.getElementById('v-base').innerText = "$ " + f(store.base);
@@ -168,108 +181,48 @@
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
         }
 
-        // --- LÓGICA DE CIERRE DETALLADO ---
         function verRepoDetallado() {
-            let tEf = 0, tTr = 0;
-            const h = store.h_v || [];
-            h.forEach(v => { if(v.m === 'Efectivo') tEf += v.v; else tTr += v.v; });
-            
-            document.getElementById('cierre-info').innerHTML = `
-                <div><p class="text-zinc-500 uppercase">Efectivo:</p><p class="text-green-500 font-bold">$${f(tEf)}</p></div>
-                <div><p class="text-zinc-500 uppercase">Transf:</p><p class="text-blue-400 font-bold">$${f(tTr)}</p></div>
-                <div><p class="text-zinc-500 uppercase">Gastos:</p><p class="text-red-500 font-bold">$${f(store.gastos)}</p></div>
-                <div><p class="text-white uppercase font-black">En Caja:</p><p class="text-yellow-500 font-black text-xs font-mono">$${f((store.base||0)+tEf-store.gastos)}</p></div>
-            `;
-
+            let tEf = 0, tTr = 0; store.h_v?.forEach(v => { if(v.m === 'Efectivo') tEf += v.v; else tTr += v.v; });
+            document.getElementById('cierre-info').innerHTML = `<div><p class="text-zinc-500">Efectivo:</p><p class="text-green-500 font-bold">$${f(tEf)}</p></div><div><p class="text-zinc-500">Transf:</p><p class="text-blue-400 font-bold">$${f(tTr)}</p></div><div><p class="text-zinc-500">Gastos:</p><p class="text-red-500 font-bold">$${f(store.gastos)}</p></div><div><p class="text-white font-black">Total:</p><p class="text-yellow-500 font-black">$${f((store.base||0)+tEf-store.gastos)}</p></div>`;
             const tb = document.getElementById('lista-cierre-det'); tb.innerHTML = '';
-            h.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>$${f(v.v)}</td></tr>`; });
+            store.h_v?.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>$${f(v.v)}</td></tr>`; });
             document.getElementById('m-cierre').style.display = 'flex';
         }
 
-        function finalizarTurno() {
-            if(!confirm("¿CONFIRMAS REINICIAR EL TURNO? Se borrarán las ventas actuales pero quedarán en el historial global.")) return;
-            db.ref('/niza_v23_audit').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => {
-                document.getElementById('m-cierre').style.display = 'none';
-                alert("TURNO REINICIADO EXITOSAMENTE.");
-            });
-        }
-
-        // --- LÓGICA DE CONSULTAS Y EXCEL ---
-        function verConsultas() {
-            document.getElementById('filtro-fecha').valueAsDate = new Date();
-            cargarConsulta();
-            document.getElementById('m-consultas').style.display = 'flex';
-        }
-
+        function finalizarTurno() { if(confirm("¿REINICIAR TURNO?")) db.ref('/niza_v24_fixed').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { document.getElementById('m-cierre').style.display='none'; alert("OK"); }); }
+        function verConsultas() { document.getElementById('filtro-fecha').valueAsDate = new Date(); cargarConsulta(); document.getElementById('m-consultas').style.display = 'flex'; }
         function cargarConsulta() {
-            const fechaFiltro = document.getElementById('filtro-fecha').value; // AAAA-MM-DD
-            const gv = store.global_v || [];
+            const fechaFiltro = document.getElementById('filtro-fecha').value;
             const tb = document.getElementById('lista-consulta-det'); tb.innerHTML = '';
-            
-            const filtrados = gv.filter(v => v.fecha === fechaFiltro);
-            
-            if(filtrados.length === 0) {
-                tb.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-zinc-600">No hay ventas registradas este día.</td></tr>';
-                return;
-            }
-
-            filtrados.forEach(v => {
-                tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>${v.m}</td><td>$${f(v.v)}</td></tr>`;
-            });
+            const filtrados = (store.global_v || []).filter(v => v.fecha === fechaFiltro);
+            if(filtrados.length === 0) { tb.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-zinc-600">Sin datos.</td></tr>'; return; }
+            filtrados.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>${v.m}</td><td>$${f(v.v)}</td></tr>`; });
         }
-
-        function exportarExcel() {
-            const table = document.getElementById('tabla-consulta');
-            const wb = XLSX.utils.table_to_book(table, {sheet: "Ventas Niza"});
-            XLSX.writeFile(wb, `Reporte_Niza_${document.getElementById('filtro-fecha').value}.xlsx`);
-        }
-
-        // --- LÓGICA DE COBRO ---
-        function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
-
-        function doCobro(met) {
-            const h = store.h_v || [];
-            const gv = store.global_v || [];
-            const fecha = new Date().toISOString().split('T')[0]; // AAAA-MM-DD
-            const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            carrito.forEach(i => {
-                const ventaObj = { n: i.n, v: i.v, u: uAct, t: hora, fecha: fecha, m: met };
-                h.push(ventaObj);
-                gv.push(ventaObj);
-                let p = store.stock.find(x => x.id === i.id);
-                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
-            });
-
-            db.ref('/niza_v23_audit').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => {
-                document.getElementById('m-pago').style.display = 'none';
-                carrito = []; actualizarTotal();
-            });
-        }
-
-        // --- FUNCIONES COMUNES ---
-        function abrirOpt(id) {
-            let p = store.stock.find(x => x.id === id);
-            if(p.sub) {
-                tempP = p; document.getElementById('opt-t').innerText = p.nombre;
-                const c = document.getElementById('opt-c'); c.innerHTML = '';
-                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-3 rounded-lg text-xs font-black tap border-b border-black uppercase text-white flex justify-between px-3"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; });
-                document.getElementById('m-opciones').style.display = 'flex';
-            } else { if(p.cant <= 0) return alert("AGOTADO"); addCarrito(p.id, p.nombre, p.precio, null); }
-        }
-        function sumarFinal(i) { let sO = tempP.sub[i]; if(sO.c <= 0) return alert("Agotado"); let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarOpt(); }
+        function exportarExcel() { const wb = XLSX.utils.table_to_book(document.getElementById('tabla-consulta'), {sheet: "Ventas"}); XLSX.writeFile(wb, `Reporte_Niza_${document.getElementById('filtro-fecha').value}.xlsx`); }
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
         function quitarI(i) { carrito.splice(i, 1); actualizarTotal(); }
         function limpiarPedido() { if(confirm("¿Vaciar?")) { carrito = []; actualizarTotal(); } }
         function actualizarTotal() { pedTot = carrito.reduce((a, b) => a + b.v, 0); document.getElementById('t-ped').innerText = "$ " + f(pedTot); renderCarrito(); }
-        function renderCarrito() { const c = document.getElementById('lista-carrito'); c.innerHTML = ''; carrito.forEach((item, i) => { c.innerHTML += `<div class="item-carrito"><div class="leading-none"><span class="text-[7px] font-black uppercase text-white">${item.n}</span><br><span class="text-[8px] text-orange-400 font-bold">$ ${f(item.v)}</span></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-5 h-5 rounded tap text-[8px]">✕</button></div>`; }); c.scrollTop = c.scrollHeight; }
+        function renderCarrito() { const c = document.getElementById('lista-carrito'); c.innerHTML = ''; carrito.forEach((item, i) => { c.innerHTML += `<div class="item-carrito"><div><p class="text-[8px] font-black uppercase text-white">${item.n}</p><p class="text-[7px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-5 h-5 rounded tap text-[8px]">✕</button></div>`; }); c.scrollTop = c.scrollHeight; }
+        function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
+        function doCobro(met) {
+            const h = store.h_v || [], gv = store.global_v || [], fecha = new Date().toISOString().split('T')[0], hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            carrito.forEach(i => { const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met }; h.push(vO); gv.push(vO); let p = store.stock.find(x => x.id === i.id); if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; } });
+            db.ref('/niza_v24_fixed').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => { document.getElementById('m-pago').style.display = 'none'; carrito = []; actualizarTotal(); });
+        }
+        function abrirOpt(id) {
+            let p = store.stock.find(x => x.id === id);
+            if(p.sub) { tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-3 rounded-lg text-xs font-black tap border-b border-black text-white flex justify-between px-3"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); document.getElementById('m-opciones').style.display = 'flex';
+            } else { if(p.cant <= 0) return alert("AGOTADO"); addCarrito(p.id, p.nombre, p.precio, null); }
+        }
+        function sumarFinal(i) { let sO = tempP.sub[i]; if(sO.c <= 0) return alert("Agotado"); let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarOpt(); }
         function addDomi() { const v = parseInt(prompt("Domi $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } }
-        function abrirGasto() { const v = parseInt(prompt("Gasto $:")); const d = prompt("Concepto:"); if(v && d) { const h = store.h_g || []; h.push({ v, d, u: uAct }); db.ref('/niza_v23_audit').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
-        function verHistorial() { const h = (store.h_v || []).slice(-15).reverse(); const c = document.getElementById('h-list'); c.innerHTML = ''; h.forEach((v, i) => { c.innerHTML += `<div class="bg-black/40 p-1.5 rounded flex justify-between items-center border-b border-zinc-800"><div><b>${v.t}</b> - ${v.n}<br><span class="text-orange-500 font-bold">$${f(v.v)}</span></div><button onclick="borrarV(${store.h_v.length - 1 - i})" class="text-red-500 font-black">✕</button></div>`; }); document.getElementById('m-hist').style.display='flex'; }
-        function borrarV(idx) { if(confirm("¿Anular?")) { store.ventas -= store.h_v[idx].v; store.h_v.splice(idx, 1); db.ref('/niza_v23_audit').update(store).then(() => verHistorial()); } }
+        function abrirGasto() { const v = parseInt(prompt("Gasto $:")); const d = prompt("Concepto:"); if(v && d) { const h = store.h_g || []; h.push({ v, d, u: uAct }); db.ref('/niza_v24_fixed').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
+        function verHistorial() { const h = (store.h_v || []).slice(-15).reverse(); const c = document.getElementById('h-list'); c.innerHTML = ''; h.forEach((v, i) => { c.innerHTML += `<div class="bg-black/40 p-1.5 rounded flex justify-between items-center border-b border-zinc-800"><div><b class="text-white">${v.t}</b> - ${v.n}<br><span class="text-orange-400 font-bold">$${f(v.v)}</span></div><button onclick="borrarV(${store.h_v.length - 1 - i})" class="text-red-500 font-black">✕</button></div>`; }); document.getElementById('m-hist').style.display='flex'; }
+        function borrarV(idx) { if(confirm("¿Anular?")) { store.ventas -= store.h_v[idx].v; store.h_v.splice(idx, 1); db.ref('/niza_v24_fixed').update(store).then(() => verHistorial()); } }
         function accesoAdmin() { if(prompt("CLAVE:") === CLAVE) { document.getElementById('m-admin').style.display='flex'; actAdmin(); } }
         function actAdmin() { const c = document.getElementById('a-list'); c.innerHTML = ''; document.getElementById('a-base').value = store.base || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[8px] mb-1">${p.nombre} (${s.n})<div class="grid grid-cols-2 gap-1 mt-1"><input type="number" id="p-${i}-${si}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"><input type="number" id="ac-${i}-${si}" value="${s.c}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"></div></div>`; }); } else { c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[8px] mb-1">${p.nombre}<div class="grid grid-cols-2 gap-1 mt-1"><input type="number" id="p-${i}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"><input type="number" id="ac-${i}" value="${p.cant}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"></div></div>`; } }); }
-        function saveAdmin() { store.base = parseInt(document.getElementById('a-base').value) || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value); s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value); }); } else { p.precio = parseInt(document.getElementById(`p-${i}`).value); p.cant = parseInt(document.getElementById(`ac-${i}`).value); } }); db.ref('/niza_v23_audit').update(store).then(() => { document.getElementById('m-admin').style.display='none'; alert("INVENTARIO ACTUALIZADO"); }); }
+        function saveAdmin() { store.base = parseInt(document.getElementById('a-base').value) || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value); s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value); }); } else { p.precio = parseInt(document.getElementById(`p-${i}`).value); p.cant = parseInt(document.getElementById(`ac-${i}`).value); } }); db.ref('/niza_v24_fixed').update(store).then(() => { document.getElementById('m-admin').style.display='none'; alert("OK"); }); }
         function cerrarOpt() { document.getElementById('m-opciones').style.display = 'none'; }
     </script>
 </body>
