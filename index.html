@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DELICIAS NIZA V19</title>
+    <title>DELICIAS NIZA V19.1</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,7 @@
         <div class="flex justify-between items-center px-1">
             <div>
                 <h1 class="font-black italic text-white text-xl uppercase tracking-tighter leading-none">DELICIAS NIZA</h1>
-                <span class="text-[8px] text-yellow-500 font-bold opacity-70 uppercase tracking-widest">PRO SYSTEM • v19</span>
+                <span class="text-[8px] text-yellow-500 font-bold opacity-70 uppercase tracking-widest">PRO SYSTEM • v19.1</span>
             </div>
             <div class="flex gap-2">
                 <button onclick="verHistorial()" class="bg-black/30 p-2 rounded-full text-lg tap">🕒</button>
@@ -60,7 +60,31 @@
     <div id="m-user" class="modal" style="display: flex;">
         <div class="bg-zinc-900 p-6 rounded-[40px] w-full max-w-sm border-2 border-yellow-500 text-center mx-4">
             <h2 class="text-white font-black mb-4 text-xl uppercase italic">¿Quién atiende?</h2>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="setUsuario('Nelson')" class="bg-orange-600 py-4 rounded-xl font-black tap uppercase text-white">Nelson</button>
-                <button onclick="setUsuario('Jenny')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white">Jenny</button>
-                <button onclick="setUsuario('Juan')" class="bg-zinc-800 py-4 rounded-
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="setUsuario('Nelson')" class="bg-orange-600 py-4 rounded-xl font-black tap uppercase text-white shadow-lg">Nelson</button>
+                <button onclick="setUsuario('Jenny')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white shadow-md border-b-2 border-zinc-700">Jenny</button>
+                <button onclick="setUsuario('Juan')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white shadow-md border-b-2 border-zinc-700">Juan</button>
+                <button onclick="setUsuario('Elizabeth')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white shadow-md border-b-2 border-zinc-700">Elizabeth</button>
+                <button onclick="setUsuario('Valeria')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white shadow-md border-b-2 border-zinc-700">Valeria</button>
+                <button onclick="setUsuario('Betty')" class="bg-zinc-800 py-4 rounded-xl font-black tap uppercase text-white shadow-md border-b-2 border-zinc-700">Betty</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="m-pago" class="modal px-6">
+        <div class="bg-zinc-900 p-6 rounded-[35px] w-full max-w-sm border-2 border-green-500 text-center">
+            <h2 class="text-white font-black mb-6 uppercase italic text-xl">Forma de Pago</h2>
+            <button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-6 rounded-2xl text-xl font-black mb-3 tap uppercase text-white shadow-lg">💵 Efectivo</button>
+            <button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-6 rounded-2xl text-xl font-black tap uppercase text-white shadow-lg">📱 Transferencia</button>
+            <button onclick="document.getElementById('m-pago').style.display='none'" class="mt-4 text-zinc-500 text-xs uppercase">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="m-historial" class="modal px-4"><div class="bg-zinc-900 p-5 rounded-[30px] w-full max-w-md max-h-[80vh] flex flex-col border border-zinc-700">
+        <h2 class="text-yellow-500 font-black text-center mb-4 uppercase italic">Últimas Ventas</h2>
+        <div id="h-list" class="overflow-y-auto flex-1 space-y-2 mb-4 text-[10px]"></div>
+        <button onclick="document.getElementById('m-historial').style.display='none'" class="bg-zinc-800 py-3 rounded-xl font-black uppercase text-white">Cerrar</button>
+    </div></div>
+
+    <div id="m-opciones" class="modal px-6">
+        <div class="bg-zinc-900 p-6 rounded-[35px] w-full max-
