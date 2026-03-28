@@ -203,4 +203,119 @@
             actualizarTotal();
         }
 
-        function quitarI
+        function quitarI(i) { carrito.splice(i, 1); actualizarTotal(); }
+        function limpiarPedido() { if(confirm("¿Vaciar pedido?")) { carrito = []; actualizarTotal(); } }
+
+        function actualizarTotal() {
+            pedTot = carrito.reduce((a, b) => a + b.v, 0);
+            document.getElementById('t-ped').innerText = "$ " + f(pedTot);
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const c = document.getElementById('lista-carrito'); c.innerHTML = '';
+            carrito.forEach((item, i) => {
+                c.innerHTML += `<div class="item-carrito">
+                    <div class="leading-none"><span class="text-[8px] font-black uppercase text-white">${item.n}</span><br><span class="text-[8px] text-orange-400">$ ${f(item.v)}</span></div>
+                    <button onclick="quitarI(${i})" class="bg-red-900 text-white w-5 h-5 rounded tap text-[8px]">✕</button>
+                </div>`;
+            });
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
+
+        function doCobro(met) {
+            const h = store.h_v || [];
+            const hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let txt = `✅ *VENTA NIZA*\n👤 *Vende:* ${uAct}\n💳 *Pago:* ${met}\n----------------\n`;
+            
+            carrito.forEach(i => {
+                h.push({ n: i.n, v: i.v, u: uAct, t: hora, m: met });
+                txt += `🔸 ${i.n}: $${f(i.v)}\n`;
+                let p = store.stock.find(x => x.id === i.id);
+                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
+            });
+
+            db.ref('/niza_v22_final').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
+                document.getElementById('m-pago').style.display = 'none';
+                if(confirm("¿Enviar WhatsApp?")) window.open(`https://wa.me/?text=${encodeURIComponent(txt + `----------------\n💰 *TOTAL: $${f(pedTot)}*`)}`);
+                carrito = []; actualizarTotal();
+            });
+        }
+
+        function addDomi() {
+            const v = parseInt(prompt("Valor Domi:"));
+            if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); }
+        }
+
+        function abrirGasto() {
+            const v = parseInt(prompt("Valor Gasto:")); const d = prompt("Concepto:");
+            if(v && d) {
+                const h = store.h_g || []; h.push({ v, d, u: uAct });
+                db.ref('/niza_v22_final').update({ gastos: (store.gastos || 0) + v, h_g: h });
+            }
+        }
+
+        function verRepo() {
+            let tE = 0; if(store.h_v) store.h_v.forEach(v => { if(v.m === 'Efectivo') tE += v.v; });
+            alert(`CIERRE:\n💵 Efectivo: $${f(tE)}\n💸 Gastos: $${f(store.gastos)}\n💰 En Caja: $${f((store.base||0)+tE-store.gastos)}`);
+            if(confirm("¿Reiniciar turno?")) db.ref('/niza_v22_final').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] });
+        }
+
+        function verHistorial() {
+            const h = (store.h_v || []).slice(-15).reverse();
+            const c = document.getElementById('h-list'); c.innerHTML = '';
+            h.forEach((v, i) => {
+                c.innerHTML += `<div class="bg-black/40 p-1.5 rounded flex justify-between items-center border-b border-zinc-800">
+                    <div><b>${v.t}</b> - ${v.n}<br><span class="text-orange-400">$${f(v.v)}</span></div>
+                    <button onclick="borrarV(${store.h_v.length - 1 - i})" class="text-red-500 font-black">✕</button>
+                </div>`;
+            });
+            document.getElementById('m-hist').style.display='flex';
+        }
+
+        function borrarV(idx) {
+            if(confirm("¿Anular venta?")) {
+                store.ventas -= store.h_v[idx].v;
+                store.h_v.splice(idx, 1);
+                db.ref('/niza_v22_final').update(store).then(() => verHistorial());
+            }
+        }
+
+        function accesoAdmin() { if(prompt("CLAVE:") === CLAVE) { document.getElementById('m-admin').style.display='flex'; actAdmin(); } }
+
+        function actAdmin() {
+            const c = document.getElementById('a-list'); c.innerHTML = '';
+            document.getElementById('a-base').value = store.base || 0;
+            store.stock.forEach((p, i) => {
+                if(p.sub) { p.sub.forEach((s, si) => {
+                    c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[9px] mb-1">
+                        ${p.nombre} (${s.n})
+                        <div class="grid grid-cols-2 gap-1 mt-1">
+                            <input type="number" id="p-${i}-${si}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center">
+                            <input type="number" id="ac-${i}-${si}" value="${s.c}" class="w-full bg-zinc-800 p-1 rounded text-white text-center">
+                        </div></div>`;
+                });} else {
+                    c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[9px] mb-1">
+                        ${p.nombre}
+                        <div class="grid grid-cols-2 gap-1 mt-1">
+                            <input type="number" id="p-${i}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center">
+                            <input type="number" id="ac-${i}" value="${p.cant}" class="w-full bg-zinc-800 p-1 rounded text-white text-center">
+                        </div></div>`;
+                }
+            });
+        }
+
+        function saveAdmin() {
+            store.base = parseInt(document.getElementById('a-base').value) || 0;
+            store.stock.forEach((p, i) => {
+                if(p.sub) { p.sub.forEach((s, si) => { p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value); s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value); });
+                } else { p.precio = parseInt(document.getElementById(`p-${i}`).value); p.cant = parseInt(document.getElementById(`ac-${i}`).value); }
+            });
+            db.ref('/niza_v22_final').update(store).then(() => { document.getElementById('m-admin').style.display='none'; alert("DATOS ACTUALIZADOS"); });
+        }
+        function cerrarOpt() { document.getElementById('m-opciones').style.display = 'none'; }
+    </script>
+</body>
+</html>
