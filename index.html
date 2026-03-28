@@ -87,4 +87,270 @@
     </div></div>
 
     <div id="m-opciones" class="modal px-6">
-        <div class="bg-zinc-900 p-6 rounded-[35px] w-full max-
+        <div class="bg-zinc-900 p-6 rounded-[35px] w-full max-w-sm border-2 border-orange-500">
+            <h2 id="opt-titulo" class="text-yellow-400 font-black mb-5 uppercase text-xl text-center italic">Sabor</h2>
+            <div id="opt-container" class="flex flex-col gap-2"></div>
+            <button onclick="cerrarOpciones()" class="mt-6 text-zinc-500 font-bold uppercase text-[10px] w-full text-center underline">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-5 rounded-[30px] w-full max-w-md max-h-[85vh] flex flex-col border border-zinc-700">
+        <h2 class="text-yellow-500 font-black text-center mb-4 uppercase italic">Configuración</h2>
+        <div id="a-items" class="overflow-y-auto flex-1 space-y-2 mb-4 pr-1">
+            <div class="mb-2 bg-black/40 p-3 rounded-xl border border-white/5 text-center">
+                <label class="text-[9px] text-zinc-400 font-black uppercase">Fondo de Caja ($)</label>
+                <input type="number" id="a-base" class="w-full bg-zinc-800 p-2 rounded-lg text-lg text-white text-center border border-zinc-600 font-mono">
+            </div>
+            <div id="a-list"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <button onclick="document.getElementById('m-admin').style.display='none'" class="bg-zinc-800 py-3 rounded-xl font-black uppercase text-xs text-white">Salir</button>
+            <button onclick="saveAdmin()" class="bg-green-600 py-3 rounded-xl font-black uppercase text-xs text-white">Guardar</button>
+        </div>
+    </div></div>
+
+    <script>
+        const CLAVE = "1234";
+        const cfg = {
+            apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs",
+            authDomain: "delicias--niza.firebaseapp.com",
+            databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com",
+            projectId: "delicias--niza",
+            storageBucket: "delicias--niza.firebasestorage.app",
+            messagingSenderId: "274297319879",
+            appId: "1:274297319879:web:3c72d7034baf683e85a9e2"
+        };
+        firebase.initializeApp(cfg);
+        const db = firebase.database();
+        let store = null, pedidoTotal = 0, listaCarrito = [], usuarioActual = "---";
+
+        const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
+
+        function setUsuario(n) {
+            usuarioActual = n;
+            document.getElementById('m-user').style.display = 'none';
+            db.ref('/niza_v19').on('value', (snap) => {
+                store = snap.val();
+                if(!store) {
+                    const init = [
+                        { id: 1, nombre: "Empanada", precio: 4000, cant: 0, icon: "🥟", sub: [
+                            {n: "Carne", c: 20}, {n: "Pollo Queso", c: 20}, {n: "Hawayana", c: 20}, {n: "Mixta Yuca", c: 20}
+                        ]},
+                        { id: 2, nombre: "Rellena", precio: 7000, cant: 0, icon: "🍖", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]},
+                        { id: 3, nombre: "Pincho", precio: 8000, cant: 0, icon: "🍢", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]},
+                        { id: 4, nombre: "Papa Rellena", precio: 4000, cant: 20, icon: "🥔" },
+                        { id: 6, nombre: "Churro B&Q", precio: 4000, cant: 20, icon: "🥐" },
+                        { id: 7, nombre: "Flauta P&Q", precio: 4000, cant: 20, icon: "🌯" },
+                        { id: 8, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" },
+                        { id: 9, nombre: "Bebida", precio: 1000, cant: 30, icon: "🥤" }
+                    ];
+                    db.ref('/niza_v19').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_ventas: [], h_gastos: [] });
+                } else { draw(); }
+            });
+        }
+
+        function draw() {
+            const m = document.getElementById('menu'); m.innerHTML = '';
+            store.stock.forEach(p => {
+                let totalS = p.sub ? p.sub.reduce((acc, curr) => acc + curr.c, 0) : p.cant;
+                m.innerHTML += `<div onclick="abrirOpciones(${p.id})" class="bg-zinc-900 p-2 rounded-[20px] tap text-center border border-white/5 shadow-lg relative">
+                    <div class="text-2xl mb-1">${p.icon}</div>
+                    <div class="text-[8px] font-black uppercase text-zinc-400 mb-1 leading-none h-3 flex items-center justify-center">${p.nombre}</div>
+                    <div class="text-orange-500 font-bold text-base font-mono italic leading-none">$ ${f(p.precio)}</div>
+                    <div class="text-[7px] text-green-500 font-bold uppercase mt-1 text-center">Disp: ${totalS}</div>
+                </div>`;
+            });
+            document.getElementById('v-base').innerText = "$ " + f(store.base);
+            document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
+            document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
+            document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
+            renderCarrito();
+        }
+
+        function abrirOpciones(id) {
+            let p = store.stock.find(x => x.id === id);
+            if(p.sub) {
+                tempProd = p;
+                document.getElementById('opt-titulo').innerText = p.nombre;
+                const c = document.getElementById('opt-container'); c.innerHTML = '';
+                p.sub.forEach((s, idx) => {
+                    c.innerHTML += `<button onclick="sumarFinal(${idx})" class="bg-zinc-800 py-4 rounded-xl text-base font-black tap border-b-2 border-black uppercase text-white shadow-lg flex justify-between px-4 items-center">
+                        <span>${s.n}</span>
+                        <span class="text-[9px] text-green-400">Disp: ${s.c}</span>
+                    </button>`;
+                });
+                document.getElementById('m-opciones').style.display = 'flex';
+            } else { 
+                if(p.cant <= 0) return alert("PRODUCTO AGOTADO");
+                addItemCarrito(p.id, p.nombre, p.precio, null); 
+            }
+        }
+
+        function sumarFinal(idx) {
+            let subObj = tempProd.sub[idx];
+            if(subObj.c <= 0) return alert("Sabor agotado!");
+            let extra = (subObj.n === 'Con Patacón') ? 1000 : 0;
+            addItemCarrito(tempProd.id, `${tempProd.nombre} (${subObj.n})`, tempProd.precio + extra, idx);
+            cerrarOpciones();
+        }
+
+        function addItemCarrito(idProd, nombre, precio, subIdx) {
+            listaCarrito.push({ id: idProd, n: nombre, v: precio, si: subIdx });
+            actualizarTotal();
+        }
+
+        function quitarItem(idx) {
+            listaCarrito.splice(idx, 1);
+            actualizarTotal();
+        }
+
+        function actualizarTotal() {
+            pedidoTotal = listaCarrito.reduce((acc, i) => acc + i.v, 0);
+            document.getElementById('t-ped').innerText = "$ " + f(pedidoTotal);
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const c = document.getElementById('lista-carrito'); c.innerHTML = '';
+            listaCarrito.forEach((item, index) => {
+                c.innerHTML += `<div class="item-carrito border-l-4 border-orange-500 shadow-md">
+                    <div>
+                        <span class="text-[10px] font-black uppercase text-white">${item.n}</span><br>
+                        <span class="text-[9px] font-mono text-orange-400">$ ${f(item.v)}</span>
+                    </div>
+                    <button onclick="quitarItem(${index})" class="bg-red-900 text-white w-8 h-8 rounded-lg font-black tap flex items-center justify-center shadow-inner">✕</button>
+                </div>`;
+            });
+        }
+
+        function confirmarMetodoPago() {
+            if(listaCarrito.length === 0) return alert("EL CARRITO ESTÁ VACÍO");
+            document.getElementById('m-pago').style.display = 'flex';
+        }
+
+        function doCobro(metodo) {
+            const h = store.h_ventas || [];
+            const horaActual = new Date().toLocaleTimeString();
+            let msgWA = `✅ *PEDIDO DELICIAS NIZA*\n--------------------------\n👤 *Atendió:* ${usuarioActual}\n📅 *Hora:* ${horaActual}\n💳 *Pago:* ${metodo}\n--------------------------\n`;
+            
+            listaCarrito.forEach(item => {
+                h.push({ n: item.n, v: item.v, u: usuarioActual, t: horaActual, m: metodo });
+                msgWA += `• ${item.n}: $${f(item.v)}\n`;
+                let p = store.stock.find(x => x.id === item.id);
+                if(p) {
+                    if(item.si !== null && p.sub) { p.sub[item.si].c--; } 
+                    else if (p.cant !== undefined) { p.cant--; }
+                }
+            });
+
+            const totalVenta = pedidoTotal;
+            db.ref('/niza_v19').update({ ventas: store.ventas + pedidoTotal, stock: store.stock, h_ventas: h }).then(() => {
+                document.getElementById('m-pago').style.display = 'none';
+                if(confirm("¿ENVIAR POR WHATSAPP?")) {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msgWA + `--------------------------\n💰 *TOTAL A PAGAR: $${f(totalVenta)}*\n\n¡Gracias por tu compra! 🥟✨`)}`);
+                }
+                listaCarrito = []; actualizarTotal();
+            });
+        }
+
+        function verHistorial() {
+            const h = (store.h_ventas || []).slice(-15).reverse();
+            const c = document.getElementById('h-list'); c.innerHTML = '';
+            h.forEach((v, i) => {
+                c.innerHTML += `<div class="bg-black/40 p-2 rounded-lg border border-zinc-800 flex justify-between items-center shadow-md">
+                    <div><b class="text-white">${v.t}</b> - ${v.n}<br><span class="text-orange-500">$${f(v.v)}</span> <span class="text-[8px] text-zinc-500 uppercase">(${v.u})</span></div>
+                    <button onclick="borrarVenta(${store.h_ventas.length - 1 - i})" class="text-red-500 text-[8px] font-black border border-red-900 px-2 py-1 rounded tap">ELIMINAR</button>
+                </div>`;
+            });
+            document.getElementById('m-historial').style.display='flex';
+        }
+
+        function borrarVenta(idx) {
+            if(!confirm("¿SEGURO DESEAS ANULAR ESTA VENTA?")) return;
+            const v = store.h_ventas[idx];
+            store.ventas -= v.v;
+            store.h_ventas.splice(idx, 1);
+            db.ref('/niza_v19').update(store).then(() => verHistorial());
+        }
+
+        function addDomi() {
+            const v = parseInt(prompt("VALOR DEL DOMICILIO:"));
+            if(v) { listaCarrito.push({ id: 99, n: "Servicio de Domicilio", v: v, si: null }); actualizarTotal(); }
+        }
+
+        function abrirGasto() {
+            const v = parseInt(prompt("VALOR DEL GASTO:")); const d = prompt("CONCEPTO DEL GASTO:");
+            if(v && d) {
+                const h = store.h_gastos || []; h.push({ v, d, u: usuarioActual });
+                db.ref('/niza_v19').update({ gastos: (store.gastos || 0) + v, h_gastos: h });
+            }
+        }
+
+        function verRepo() {
+            let totalEf = 0, totalTr = 0;
+            if(store.h_ventas) store.h_ventas.forEach(v => { 
+                if(v.m === 'Efectivo') totalEf += v.v; else totalTr += v.v;
+            });
+            let totalCaja = (store.base || 0) + totalEf - (store.gastos || 0);
+            let t = `📊 REPORTE DE CIERRE\n\n💵 EFECTIVO: $${f(totalEf)}\n📱 TRANSFERENCIA: $${f(totalTr)}\n💸 TOTAL GASTOS: $${f(store.gastos)}\n------------------\n💰 DINERO EN CAJA: $${f(totalCaja)}`;
+            alert(t);
+            if(confirm("¿DESEAS REINICIAR LAS VENTAS PARA UN NUEVO TURNO?")) {
+                db.ref('/niza_v19').update({ ventas: 0, gastos: 0, h_ventas: [], h_gastos: [] });
+            }
+        }
+
+        function accesoAdmin() {
+            if(prompt("INGRESE CLAVE DE ADMINISTRADOR:") === CLAVE) { 
+                document.getElementById('m-admin').style.display='flex'; 
+                actAdmin(); 
+            }
+        }
+
+        function actAdmin() {
+            const c = document.getElementById('a-list'); c.innerHTML = '';
+            document.getElementById('a-base').value = store.base || 0;
+            store.stock.forEach((p, i) => {
+                if(p.sub) {
+                    p.sub.forEach((s, si) => {
+                        c.innerHTML += `<div class="bg-black/50 p-2 rounded-xl mb-1 border border-zinc-800">
+                            <p class="text-[8px] text-yellow-500 font-black mb-1 tracking-wider">${p.nombre} (${s.n})</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" id="p-${i}-${si}" value="${p.precio}" class="bg-zinc-800 p-1 text-xs text-orange-400 text-center rounded border border-zinc-700">
+                                <input type="number" id="ac-${i}-${si}" value="${s.c}" class="bg-zinc-800 p-1 text-xs text-green-400 text-center rounded border border-zinc-700">
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    c.innerHTML += `<div class="bg-black/50 p-2 rounded-xl mb-1 border border-zinc-800">
+                        <p class="text-[8px] text-blue-400 font-black mb-1 tracking-wider">${p.nombre}</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="p-${i}" value="${p.precio}" class="bg-zinc-800 p-1 text-xs text-orange-400 text-center rounded border border-zinc-700">
+                            <input type="number" id="ac-${i}" value="${p.cant}" class="bg-zinc-800 p-1 text-xs text-green-400 text-center rounded border border-zinc-700">
+                        </div>
+                    </div>`;
+                }
+            });
+        }
+
+        function saveAdmin() {
+            store.base = parseInt(document.getElementById('a-base').value) || 0;
+            store.stock.forEach((p, i) => {
+                if(p.sub) {
+                    p.sub.forEach((s, si) => {
+                        p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value) || 0;
+                        s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value) || 0;
+                    });
+                } else {
+                    p.precio = parseInt(document.getElementById(`p-${i}`).value) || 0;
+                    p.cant = parseInt(document.getElementById(`ac-${i}`).value) || 0;
+                }
+            });
+            db.ref('/niza_v19').update(store).then(() => { 
+                document.getElementById('m-admin').style.display='none'; 
+                alert("CONFIGURACIÓN GUARDADA CORRECTAMENTE"); 
+            });
+        }
+        function cerrarOpciones() { document.getElementById('m-opciones').style.display = 'none'; }
+    </script>
+</body>
+</html>
