@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NIZA CEL V24</title>
+    <title>NIZA V25 FINAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,24 +12,13 @@
         .tap:active { transform: scale(0.95); opacity: 0.8; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 100; align-items: center; justify-content: center; }
         body { background-color: #000; color: white; user-select: none; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-        
-        /* Cabecera ajustada */
         .cabecera { height: 80px; background: #991b1b; border-bottom: 2px solid #eab308; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
-        
-        /* Cuerpo principal */
         .cuerpo { display: flex; height: calc(100vh - 80px); }
         .izquierda { width: 55%; border-right: 1px solid #333; overflow-y: auto; padding: 6px; background: #050505; }
-        .derecha { width: 45%; display: flex; flex-direction: column; background: #0a0a0a; padding: 6px; position: relative; }
-
-        /* Carrito con scroll limitado para que no empuje los botones */
-        #lista-carrito { flex: 1 1 auto; overflow-y: auto; margin-bottom: 4px; border-bottom: 1px solid #222; }
-        
-        .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #161616; padding: 4px 6px; border-radius: 6px; margin-bottom: 3px; border-left: 2px solid #f97316; }
-        
-        /* Panel de botones inferior fijo */
-        .panel-cobro { flex: 0 0 auto; background: #0a0a0a; padding-top: 4px; }
-        
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .derecha { width: 45%; display: flex; flex-direction: column; background: #0a0a0a; padding: 6px; }
+        #lista-carrito { flex: 1; overflow-y: auto; margin-bottom: 4px; }
+        .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #161616; padding: 4px; border-radius: 6px; margin-bottom: 3px; border-left: 2px solid #f97316; }
+        .font-mono { font-family: monospace; }
         table { width: 100%; border-collapse: collapse; font-size: 9px; }
         th, td { border: 1px solid #333; padding: 3px; text-align: left; }
     </style>
@@ -38,12 +27,12 @@
 
     <header class="cabecera">
         <div class="flex justify-between items-center mb-1">
-            <h1 class="font-black italic text-[11px] tracking-tighter">NIZA V24 PRO</h1>
+            <h1 class="font-black italic text-[11px]">DELICIAS NIZA V25</h1>
             <div class="flex gap-1">
-                <button onclick="verConsultas()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap font-bold">📊</button>
-                <button onclick="verHistorial()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap font-bold">🕒</button>
-                <button onclick="accesoAdmin()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap font-bold">⚙️</button>
-                <button onclick="verRepoDetallado()" class="bg-yellow-500 text-black px-2 py-1 rounded font-black text-[9px] tap uppercase">Cierre</button>
+                <button onclick="verConsultas()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap">📊</button>
+                <button onclick="verHistorial()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap">🕒</button>
+                <button onclick="accesoAdmin()" class="bg-black/40 px-2 py-1 rounded text-[10px] tap">⚙️</button>
+                <button onclick="verRepoDetallado()" class="bg-yellow-500 text-black px-2 py-1 rounded font-black text-[9px] uppercase tap">Cierre</button>
             </div>
         </div>
         <div class="grid grid-cols-4 gap-1 text-center">
@@ -56,7 +45,7 @@
 
     <div class="cuerpo">
         <div class="izquierda">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded mb-2 border border-zinc-800 text-[10px] outline-none">
+            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded mb-2 border border-zinc-800 text-[10px]">
             <div id="menu" class="grid grid-cols-2 gap-1.5"></div>
         </div>
 
@@ -65,34 +54,29 @@
                 <span>🛒 Ticket</span>
                 <span>👤 <span id="u-act" class="text-orange-400">---</span></span>
             </div>
-            
-            <div id="lista-carrito">
-                </div>
-
-            <div class="panel-cobro">
+            <div id="lista-carrito"></div>
+            <div class="pt-1 border-t border-zinc-900">
                 <div class="flex justify-between items-baseline mb-1">
                     <span class="text-[8px] font-bold text-zinc-500 uppercase">Total:</span>
                     <span id="t-ped" class="text-2xl font-black font-mono text-white leading-none">$ 0</span>
                 </div>
-                
                 <div class="flex gap-1 mb-1">
-                    <button onclick="addDomi()" class="flex-1 bg-zinc-800 text-blue-400 py-2 rounded-lg text-lg tap border border-zinc-700">🛵</button>
-                    <button onclick="abrirGasto()" class="flex-1 bg-zinc-800 text-red-400 py-2 rounded-lg text-lg tap border border-zinc-700">💸</button>
-                    <button onclick="limpiarPedido()" class="flex-1 bg-zinc-900 text-zinc-500 py-2 rounded-lg text-[7px] font-black uppercase tap border border-zinc-800">Borrar</button>
+                    <button onclick="addDomi()" class="flex-1 bg-zinc-800 text-blue-400 py-2 rounded-lg text-lg tap">🛵</button>
+                    <button onclick="abrirGasto()" class="flex-1 bg-zinc-800 text-red-400 py-2 rounded-lg text-lg tap">💸</button>
+                    <button onclick="limpiarPedido()" class="flex-1 bg-zinc-900 text-zinc-600 py-2 rounded-lg text-[7px] font-black uppercase tap">Borrar</button>
                 </div>
-                
-                <button onclick="irAPagar()" class="w-full bg-green-600 text-white py-3 rounded-xl text-3xl tap font-black shadow-lg border-b-4 border-green-900">💰 COBRAR</button>
+                <button onclick="irAPagar()" class="w-full bg-green-600 text-white py-3 rounded-xl text-2xl tap font-black shadow-lg">💰 COBRAR</button>
             </div>
         </div>
     </div>
 
     <div id="m-cierre" class="modal px-4">
         <div class="bg-zinc-900 p-4 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col border border-yellow-600">
-            <h2 class="text-yellow-500 font-black text-center mb-2 uppercase italic text-xs">Reporte de Cierre</h2>
+            <h2 class="text-yellow-500 font-black text-center mb-2 uppercase text-xs">Reporte de Turno</h2>
             <div id="cierre-info" class="text-[9px] mb-3 grid grid-cols-2 gap-2 bg-black/50 p-2 rounded"></div>
             <div class="overflow-y-auto flex-1 mb-3">
                 <table id="tabla-cierre">
-                    <thead><tr><th>Hora</th><th>Item</th><th>Vend</th><th>$ Valor</th></tr></thead>
+                    <thead><tr><th>Hora</th><th>Item</th><th>Vend</th><th>$</th></tr></thead>
                     <tbody id="lista-cierre-det"></tbody>
                 </table>
             </div>
@@ -107,7 +91,7 @@
         <div class="bg-zinc-900 p-3 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-blue-600">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-blue-400 font-black uppercase text-xs">Ventas Globales</h2>
-                <input type="date" id="filtro-fecha" onchange="cargarConsulta()" class="bg-zinc-800 p-1 rounded text-[10px] border border-blue-500">
+                <input type="date" id="filtro-fecha" onchange="cargarConsulta()" class="bg-zinc-800 p-1 rounded text-[10px] text-white">
             </div>
             <div class="overflow-y-auto flex-1 mb-3">
                 <table id="tabla-consulta">
@@ -122,11 +106,15 @@
         </div>
     </div>
 
-    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-5 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase italic text-sm">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
-    <div id="m-pago" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-green-500 text-center"><h2 class="text-white font-black mb-6 uppercase text-sm">Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-4 rounded-xl text-lg font-black mb-3 tap text-white shadow-lg">💵 Efectivo</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-4 rounded-xl text-lg font-black tap text-white shadow-lg">📱 Transferencia</button><button onclick="document.getElementById('m-pago').style.display='none'" class="mt-4 text-zinc-500 text-[10px] uppercase underline">Cerrar</button></div></div>
-    <div id="m-opciones" class="modal px-6"><div class="bg-zinc-900 p-4 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center italic text-xs">Sabor</h2><div id="opt-c" class="flex flex-col gap-1.5"></div><button onclick="cerrarOpt()" class="mt-4 text-zinc-600 text-[9px] w-full text-center uppercase font-bold">Cancelar</button></div></div>
-    <div id="m-hist" class="modal px-4"><div class="bg-zinc-900 p-3 rounded-xl w-72 max-h-[70vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-2 text-xs uppercase italic">Turno</h2><div id="h-list" class="overflow-y-auto flex-1 space-y-1 text-[9px]"></div><button onclick="document.getElementById('m-hist').style.display='none'" class="bg-zinc-800 py-2 mt-2 rounded-lg text-white text-[9px] font-bold uppercase">Cerrar</button></div></div>
-    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-4 rounded-2xl w-80 max-h-[80vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-3 text-[10px] uppercase italic">Admin Stock</h2><div class="mb-2"><label class="text-[8px] text-zinc-500 font-bold">BASE CAJA $</label><input type="number" id="a-base" class="w-full bg-zinc-800 p-1 text-white text-center rounded text-sm outline-none border border-zinc-700"></div><div id="a-list" class="overflow-y-auto flex-1 space-y-1"></div><button onclick="saveAdmin()" class="bg-green-600 py-2 mt-3 rounded-lg text-white font-black text-[10px] uppercase">Guardar ✅</button></div></div>
+    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-5 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase text-sm">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
+    
+    <div id="m-pago" class="modal px-6"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-green-500 text-center"><h2 class="text-white font-black mb-6 uppercase text-sm">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-4 rounded-xl text-lg font-black mb-3 tap text-white">💵 Efectivo</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-4 rounded-xl text-lg font-black tap text-white">📱 Transferencia</button><button onclick="document.getElementById('m-pago').style.display='none'" class="mt-4 text-zinc-500 text-[10px] uppercase underline">Regresar</button></div></div>
+
+    <div id="m-opciones" class="modal px-6"><div class="bg-zinc-900 p-4 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center text-xs italic">Sabor</h2><div id="opt-c" class="flex flex-col gap-1.5"></div><button onclick="cerrarOpt()" class="mt-4 text-zinc-600 text-[9px] w-full text-center uppercase font-bold">Cancelar</button></div></div>
+
+    <div id="m-hist" class="modal px-4"><div class="bg-zinc-900 p-3 rounded-xl w-72 max-h-[70vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-2 text-xs uppercase">Historial Turno</h2><div id="h-list" class="overflow-y-auto flex-1 space-y-1 text-[9px]"></div><button onclick="document.getElementById('m-hist').style.display='none'" class="bg-zinc-800 py-2 mt-2 rounded-lg text-white text-[9px] font-bold uppercase">Cerrar</button></div></div>
+
+    <div id="m-admin" class="modal px-4"><div class="bg-zinc-900 p-4 rounded-2xl w-80 max-h-[80vh] flex flex-col border border-zinc-700"><h2 class="text-yellow-500 font-black text-center mb-3 text-[10px] uppercase italic text-sm">Administrar Stock</h2><div class="mb-2"><label class="text-[8px] text-zinc-500 font-bold uppercase">Base Caja $</label><input type="number" id="a-base" class="w-full bg-zinc-800 p-1 text-white text-center rounded text-sm"></div><div id="a-list" class="overflow-y-auto flex-1 space-y-1"></div><button onclick="saveAdmin()" class="bg-green-600 py-2 mt-3 rounded-lg text-white font-black text-[10px] uppercase">Guardar Cambios ✅</button></div></div>
 
     <script>
         const CLAVE = "1234";
@@ -152,11 +140,11 @@
         function setU(n) {
             uAct = n; document.getElementById('m-user').style.display = 'none';
             document.getElementById('u-act').innerText = n;
-            db.ref('/niza_v24_fixed').on('value', (snap) => {
+            db.ref('/niza_v25_master').on('value', (snap) => {
                 store = snap.val();
                 if(!store) {
                     const init = [{ id: 1, nombre: "Empanada", precio: 4000, cant: 0, icon: "🥟", sub: [{n: "Carne", c: 20}, {n: "Pollo Queso", c: 20}, {n: "Hawayana", c: 20}, {n: "Mixta Yuca", c: 20}]}, { id: 2, nombre: "Rellena", precio: 7000, cant: 0, icon: "🍖", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]}, { id: 3, nombre: "Pincho", precio: 8000, cant: 0, icon: "🍢", sub: [{n: "Con Papa", c: 10}, {n: "Con Patacón", c: 10}]}, { id: 4, nombre: "Papa Rellena", precio: 4000, cant: 20, icon: "🥔" }, { id: 6, nombre: "Churro B&Q", precio: 4000, cant: 20, icon: "🥐" }, { id: 7, nombre: "Flauta P&Q", precio: 4000, cant: 20, icon: "🌯" }, { id: 8, nombre: "Fresas", precio: 14000, cant: 15, icon: "🍓" }, { id: 9, nombre: "Bebida", precio: 1000, cant: 30, icon: "🥤" }];
-                    db.ref('/niza_v24_fixed').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_v: [], h_g: [], global_v: [] });
+                    db.ref('/niza_v25_master').set({ base: 0, ventas: 0, gastos: 0, stock: init, h_v: [], h_g: [], global_v: [] });
                 } else { draw(); }
             });
         }
@@ -172,7 +160,7 @@
                     <div class="text-lg mb-0.5">${p.icon}</div>
                     <div class="text-[7px] font-black uppercase text-zinc-400 leading-none h-3 flex items-center justify-center">${p.nombre}</div>
                     <div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div>
-                    <div class="text-[5px] text-green-500/60 font-bold italic">S: ${tS}</div>
+                    <div class="text-[5px] text-green-500/60 font-bold italic">Stock: ${tS}</div>
                 </div>`;
             });
             document.getElementById('v-base').innerText = "$ " + f(store.base);
@@ -182,47 +170,72 @@
         }
 
         function verRepoDetallado() {
-            let tEf = 0, tTr = 0; store.h_v?.forEach(v => { if(v.m === 'Efectivo') tEf += v.v; else tTr += v.v; });
-            document.getElementById('cierre-info').innerHTML = `<div><p class="text-zinc-500">Efectivo:</p><p class="text-green-500 font-bold">$${f(tEf)}</p></div><div><p class="text-zinc-500">Transf:</p><p class="text-blue-400 font-bold">$${f(tTr)}</p></div><div><p class="text-zinc-500">Gastos:</p><p class="text-red-500 font-bold">$${f(store.gastos)}</p></div><div><p class="text-white font-black">Total:</p><p class="text-yellow-500 font-black">$${f((store.base||0)+tEf-store.gastos)}</p></div>`;
+            let tEf = 0, tTr = 0; (store.h_v || []).forEach(v => { if(v.m === 'Efectivo') tEf += v.v; else tTr += v.v; });
+            document.getElementById('cierre-info').innerHTML = `<div><p class="text-zinc-500 uppercase">Efectivo:</p><p class="text-green-500 font-bold">$${f(tEf)}</p></div><div><p class="text-zinc-500 uppercase">Transf:</p><p class="text-blue-400 font-bold">$${f(tTr)}</p></div><div><p class="text-zinc-500 uppercase">Gastos:</p><p class="text-red-500 font-bold">$${f(store.gastos)}</p></div><div><p class="text-white font-black uppercase">En Caja:</p><p class="text-yellow-500 font-black">$${f((store.base||0)+tEf-store.gastos)}</p></div>`;
             const tb = document.getElementById('lista-cierre-det'); tb.innerHTML = '';
-            store.h_v?.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>$${f(v.v)}</td></tr>`; });
+            (store.h_v || []).forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>$${f(v.v)}</td></tr>`; });
             document.getElementById('m-cierre').style.display = 'flex';
         }
 
-        function finalizarTurno() { if(confirm("¿REINICIAR TURNO?")) db.ref('/niza_v24_fixed').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { document.getElementById('m-cierre').style.display='none'; alert("OK"); }); }
-        function verConsultas() { document.getElementById('filtro-fecha').valueAsDate = new Date(); cargarConsulta(); document.getElementById('m-consultas').style.display = 'flex'; }
-        function cargarConsulta() {
-            const fechaFiltro = document.getElementById('filtro-fecha').value;
-            const tb = document.getElementById('lista-consulta-det'); tb.innerHTML = '';
-            const filtrados = (store.global_v || []).filter(v => v.fecha === fechaFiltro);
-            if(filtrados.length === 0) { tb.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-zinc-600">Sin datos.</td></tr>'; return; }
-            filtrados.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>${v.m}</td><td>$${f(v.v)}</td></tr>`; });
+        function finalizarTurno() {
+            if(confirm("¿REINICIAR TURNO? Los datos se guardarán en el historial global.")) {
+                const fecha = new Date().toLocaleDateString();
+                const dataCierre = { fecha: fecha, vendedor: uAct, total_ventas: store.ventas, total_gastos: store.gastos, efectivo_final: ((store.base||0)+store.ventas-store.gastos) };
+                db.ref('/historico_cierres').push(dataCierre);
+                db.ref('/niza_v25_master').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { 
+                    document.getElementById('m-cierre').style.display='none'; 
+                    alert("TURNO CERRADO Y GUARDADO ✅"); 
+                });
+            }
         }
-        function exportarExcel() { const wb = XLSX.utils.table_to_book(document.getElementById('tabla-consulta'), {sheet: "Ventas"}); XLSX.writeFile(wb, `Reporte_Niza_${document.getElementById('filtro-fecha').value}.xlsx`); }
+
+        function verConsultas() { document.getElementById('filtro-fecha').valueAsDate = new Date(); cargarConsulta(); document.getElementById('m-consultas').style.display = 'flex'; }
+        
+        function cargarConsulta() {
+            const fF = document.getElementById('filtro-fecha').value;
+            const tb = document.getElementById('lista-consulta-det'); tb.innerHTML = '';
+            const filt = (store.global_v || []).filter(v => v.fecha === fF);
+            if(filt.length === 0) { tb.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-zinc-600">Sin datos este día.</td></tr>'; return; }
+            filt.forEach(v => { tb.innerHTML += `<tr><td>${v.t}</td><td>${v.n}</td><td>${v.u}</td><td>${v.m}</td><td>$${f(v.v)}</td></tr>`; });
+        }
+
+        function exportarExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tabla-consulta')), `NIZA_${document.getElementById('filtro-fecha').value}.xlsx`); }
+
+        function doCobro(met) {
+            const h = store.h_v || [], gv = store.global_v || [], fecha = new Date().toISOString().split('T')[0], hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let txtW = `✅ *VENTA NIZA*\n👤 *Vendió:* ${uAct}\n💳 *Pago:* ${met}\n----------------\n`;
+            
+            carrito.forEach(i => {
+                const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met };
+                h.push(vO); gv.push(vO);
+                txtW += `🔸 ${i.n}: $${f(i.v)}\n`;
+                let p = store.stock.find(x => x.id === i.id);
+                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
+            });
+
+            db.ref('/niza_v25_master').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => {
+                document.getElementById('m-pago').style.display = 'none';
+                if(confirm("¿Enviar WhatsApp?")) window.open(`https://wa.me/?text=${encodeURIComponent(txtW + `----------------\n💰 *TOTAL: $${f(pedTot)}*`)}`);
+                carrito = []; actualizarTotal();
+            });
+        }
+
+        // FUNCIONES DE APOYO
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
         function quitarI(i) { carrito.splice(i, 1); actualizarTotal(); }
         function limpiarPedido() { if(confirm("¿Vaciar?")) { carrito = []; actualizarTotal(); } }
         function actualizarTotal() { pedTot = carrito.reduce((a, b) => a + b.v, 0); document.getElementById('t-ped').innerText = "$ " + f(pedTot); renderCarrito(); }
         function renderCarrito() { const c = document.getElementById('lista-carrito'); c.innerHTML = ''; carrito.forEach((item, i) => { c.innerHTML += `<div class="item-carrito"><div><p class="text-[8px] font-black uppercase text-white">${item.n}</p><p class="text-[7px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-5 h-5 rounded tap text-[8px]">✕</button></div>`; }); c.scrollTop = c.scrollHeight; }
         function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
-        function doCobro(met) {
-            const h = store.h_v || [], gv = store.global_v || [], fecha = new Date().toISOString().split('T')[0], hora = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            carrito.forEach(i => { const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met }; h.push(vO); gv.push(vO); let p = store.stock.find(x => x.id === i.id); if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; } });
-            db.ref('/niza_v24_fixed').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => { document.getElementById('m-pago').style.display = 'none'; carrito = []; actualizarTotal(); });
-        }
-        function abrirOpt(id) {
-            let p = store.stock.find(x => x.id === id);
-            if(p.sub) { tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-3 rounded-lg text-xs font-black tap border-b border-black text-white flex justify-between px-3"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); document.getElementById('m-opciones').style.display = 'flex';
-            } else { if(p.cant <= 0) return alert("AGOTADO"); addCarrito(p.id, p.nombre, p.precio, null); }
-        }
+        function abrirOpt(id) { let p = store.stock.find(x => x.id === id); if(p.sub) { tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-3 rounded-lg text-xs font-black tap border-b border-black text-white flex justify-between px-3"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); document.getElementById('m-opciones').style.display = 'flex'; } else { if(p.cant <= 0) return alert("AGOTADO"); addCarrito(p.id, p.nombre, p.precio, null); } }
         function sumarFinal(i) { let sO = tempP.sub[i]; if(sO.c <= 0) return alert("Agotado"); let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarOpt(); }
         function addDomi() { const v = parseInt(prompt("Domi $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } }
-        function abrirGasto() { const v = parseInt(prompt("Gasto $:")); const d = prompt("Concepto:"); if(v && d) { const h = store.h_g || []; h.push({ v, d, u: uAct }); db.ref('/niza_v24_fixed').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
+        function abrirGasto() { const v = parseInt(prompt("Gasto $:")); const d = prompt("Concepto:"); if(v && d) { const h = store.h_g || []; h.push({ v, d, u: uAct }); db.ref('/niza_v25_master').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
         function verHistorial() { const h = (store.h_v || []).slice(-15).reverse(); const c = document.getElementById('h-list'); c.innerHTML = ''; h.forEach((v, i) => { c.innerHTML += `<div class="bg-black/40 p-1.5 rounded flex justify-between items-center border-b border-zinc-800"><div><b class="text-white">${v.t}</b> - ${v.n}<br><span class="text-orange-400 font-bold">$${f(v.v)}</span></div><button onclick="borrarV(${store.h_v.length - 1 - i})" class="text-red-500 font-black">✕</button></div>`; }); document.getElementById('m-hist').style.display='flex'; }
-        function borrarV(idx) { if(confirm("¿Anular?")) { store.ventas -= store.h_v[idx].v; store.h_v.splice(idx, 1); db.ref('/niza_v24_fixed').update(store).then(() => verHistorial()); } }
+        function borrarV(idx) { if(confirm("¿Anular?")) { store.ventas -= store.h_v[idx].v; store.h_v.splice(idx, 1); db.ref('/niza_v25_master').update(store).then(() => verHistorial()); } }
         function accesoAdmin() { if(prompt("CLAVE:") === CLAVE) { document.getElementById('m-admin').style.display='flex'; actAdmin(); } }
         function actAdmin() { const c = document.getElementById('a-list'); c.innerHTML = ''; document.getElementById('a-base').value = store.base || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[8px] mb-1">${p.nombre} (${s.n})<div class="grid grid-cols-2 gap-1 mt-1"><input type="number" id="p-${i}-${si}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"><input type="number" id="ac-${i}-${si}" value="${s.c}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"></div></div>`; }); } else { c.innerHTML += `<div class="bg-black/50 p-2 rounded text-[8px] mb-1">${p.nombre}<div class="grid grid-cols-2 gap-1 mt-1"><input type="number" id="p-${i}" value="${p.precio}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"><input type="number" id="ac-${i}" value="${p.cant}" class="w-full bg-zinc-800 p-1 rounded text-white text-center"></div></div>`; } }); }
-        function saveAdmin() { store.base = parseInt(document.getElementById('a-base').value) || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value); s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value); }); } else { p.precio = parseInt(document.getElementById(`p-${i}`).value); p.cant = parseInt(document.getElementById(`ac-${i}`).value); } }); db.ref('/niza_v24_fixed').update(store).then(() => { document.getElementById('m-admin').style.display='none'; alert("OK"); }); }
+        function saveAdmin() { store.base = parseInt(document.getElementById('a-base').value) || 0; store.stock.forEach((p, i) => { if(p.sub) { p.sub.forEach((s, si) => { p.precio = parseInt(document.getElementById(`p-${i}-${si}`).value); s.c = parseInt(document.getElementById(`ac-${i}-${si}`).value); }); } else { p.precio = parseInt(document.getElementById(`p-${i}`).value); p.cant = parseInt(document.getElementById(`ac-${i}`).value); } }); db.ref('/niza_v25_master').update(store).then(() => { document.getElementById('m-admin').style.display='none'; alert("OK ✅"); }); }
         function cerrarOpt() { document.getElementById('m-opciones').style.display = 'none'; }
     </script>
 </body>
