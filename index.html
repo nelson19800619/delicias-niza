@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V57 - WHATSAPP INTEGRADO</title>
+    <title>NIZA V58 - CONFIRMACIÓN WHATSAPP</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +30,7 @@
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
             <div class="flex items-center gap-2">
-                <h1 class="font-black italic text-xs text-yellow-400">NIZA V57</h1>
+                <h1 class="font-black italic text-xs text-yellow-400">NIZA V58</h1>
                 <span id="label-u" class="bg-white/10 px-2 py-0.5 rounded text-[8px] text-zinc-300 uppercase font-bold"></span>
             </div>
             <div class="flex gap-1">
@@ -68,7 +68,7 @@
 
     <div id="m-admin" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-zinc-500">
-            <h2 class="text-white font-black mb-4 uppercase text-center italic">Inventario V57</h2>
+            <h2 class="text-white font-black mb-4 uppercase text-center italic">Inventario V58</h2>
             <div id="lista-admin" class="space-y-3"></div>
             <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-6 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
@@ -98,7 +98,7 @@
         <div class="bg-black p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-yellow-500">
             <h2 id="det-fecha" class="text-yellow-500 font-black mb-2 uppercase text-center text-xs"></h2>
             <p id="det-meta" class="text-[9px] text-zinc-500 text-center mb-4 uppercase"></p>
-            <button id="btn-excel-pasado" class="w-full bg-green-700 py-3 rounded-xl mb-4 font-black text-[9px] uppercase text-white tap">📥 Descargar este día (Excel)</button>
+            <button id="btn-excel-pasado" class="w-full bg-green-700 py-3 rounded-xl mb-4 font-black text-[9px] uppercase text-white tap">📥 Excel Día</button>
             <div id="det-items" class="space-y-1.5"></div>
             <button onclick="document.getElementById('m-detalle-cierre').style.display='none'" class="w-full bg-zinc-800 py-4 rounded-xl mt-4 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
@@ -106,7 +106,7 @@
 
     <div id="m-opciones" class="modal"><div class="bg-zinc-900 p-5 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center text-xs"></h2><div id="opt-c" class="flex flex-col gap-2"></div><button onclick="cerrarModales()" class="mt-4 text-zinc-600 text-[10px] w-full text-center">Volver</button></div></div>
     <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase text-xs italic text-yellow-500">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
-    <div id="m-pago" class="modal"><div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center text-white"><h2 class="font-black mb-6 uppercase">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap">💵 EFECTIVO</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap">📱 TRANSF.</button><button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button></div></div>
+    <div id="m-pago" class="modal"><div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center text-white"><h2 class="font-black mb-6 uppercase text-sm">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap text-white">💵 EFECTIVO</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap text-white">📱 TRANSF.</button><button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button></div></div>
 
     <script>
         const cfg = { apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs", authDomain: "delicias--niza.firebaseapp.com", databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com", projectId: "delicias--niza" };
@@ -157,7 +157,6 @@
 
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
 
-        // --- ADMINISTRADOR CON AJUSTE DE VALOR Y STOCK POR PRODUCTO ---
         function abrirAdmin() {
             if(prompt("CLAVE ADMIN:") !== "1234") return;
             document.getElementById('m-admin').style.display = 'flex';
@@ -182,10 +181,12 @@
         function editC(i) { const n = parseInt(prompt("Stock:", store.stock[i].cant)); if(!isNaN(n)) { store.stock[i].cant = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
         function editStockSub(pi, si) { const n = parseInt(prompt("Stock:", store.stock[pi].sub[si].c)); if(!isNaN(n)) { store.stock[pi].sub[si].c = n; db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => abrirAdmin()); } }
 
-        // --- PAGO Y ENVÍO WHATSAPP ---
+        // --- PAGO CON PREGUNTA DE WHATSAPP ---
         function doCobro(met) {
             const { fecha, hora } = getColTime();
             const h = store.h_v || [];
+            const enviaWPP = confirm("¿Enviar comprobante a WhatsApp?");
+
             let msg = `*DELICIAS NIZA - VENTA*%0A`;
             msg += `*Atendió:* ${uAct}%0A`;
             msg += `*Fecha:* ${fecha} ${hora}%0A`;
@@ -193,20 +194,22 @@
 
             carrito.forEach(i => {
                 h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
-                msg += `• ${i.n} - $${f(i.v)}%0A`;
+                if(enviaWPP) msg += `• ${i.n} - $${f(i.v)}%0A`;
                 let p = store.stock.find(x => x.id === i.id);
                 if(p) { if(i.si !== null && p.sub) p.sub[i.si].c--; else p.cant--; }
             });
 
             if(descAct > 0) {
                 h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met });
-                msg += `*Desc:* -$${f(descAct)}%0A`;
+                if(enviaWPP) msg += `*Desc:* -$${f(descAct)}%0A`;
             }
-            msg += `-----------------%0A*TOTAL: $${f(pedTot)}*`;
+            if(enviaWPP) msg += `-----------------%0A*TOTAL: $${f(pedTot)}*`;
 
             db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
-                const tel = "573163351989";
-                window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+                if(enviaWPP) {
+                    const tel = "573163351989";
+                    window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+                }
                 cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
             });
         }
@@ -219,7 +222,6 @@
             if(descAct > 0) c.innerHTML += `<div class="item-cart bg-red-900/40"><div><p class="text-[9px] font-black text-red-100">DESC.</p><p class="text-[8px] text-red-200">-$ ${f(descAct)}</p></div></div>`;
         }
 
-        // --- REPORTES E HISTORIAL ---
         function verHistorial() {
             document.getElementById('m-historial').style.display = 'flex';
             const list = document.getElementById('lista-historial'); list.innerHTML = 'Cargando...';
@@ -229,12 +231,12 @@
                     const c = cierresCache[id];
                     list.innerHTML += `<div class="bg-zinc-800 p-3 rounded-2xl border-l-4 border-purple-500">
                         <div class="flex justify-between items-center text-[10px] font-black mb-2"><span>${c.fecha}</span><span class="text-zinc-500 uppercase">${c.u}</span></div>
-                        <div class="grid grid-cols-3 text-center mb-3">
+                        <div class="grid grid-cols-3 text-center mb-2">
                             <div><p class="text-[7px] text-zinc-500 uppercase">Venta</p><p class="text-green-400 text-[9px] font-black">$${f(c.v)}</p></div>
                             <div><p class="text-[7px] text-zinc-500 uppercase">Gasto</p><p class="text-red-400 text-[9px] font-black">-$${f(c.g)}</p></div>
                             <div><p class="text-[7px] text-zinc-500 uppercase">Caja</p><p class="text-white text-[9px] font-black">$${f(c.tot)}</p></div>
                         </div>
-                        <button onclick="verDetalleCierre('${id}')" class="w-full bg-purple-600/20 py-2 rounded-lg text-purple-400 text-[9px] font-black uppercase tap">Ver Detalle / Excel</button>
+                        <button onclick="verDetalleCierre('${id}')" class="w-full bg-purple-600/20 py-2 rounded-lg text-purple-400 text-[9px] font-black uppercase tap">Detalle / Excel</button>
                     </div>`;
                 });
             });
