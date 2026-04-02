@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V54 - POS DETALLADO</title>
+    <title>NIZA V54 - ADMIN DETALLADO</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +23,6 @@
         .btn-pay { background: #15803d; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; height: 52px; border-bottom: 3px solid #14532d; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .item-cart { display: flex; justify-content: space-between; align-items: center; background: #18181b; padding: 8px; border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #f97316; }
-        /* Estilo para botones de opciones */
         .opt-btn { background: #27272a; border: 1px solid #3f3f46; transition: all 0.2s; }
         .opt-btn:active { background: #3f3f46; border-color: #fbbf24; }
     </style>
@@ -143,7 +142,6 @@
 
         function buscar() { draw(document.getElementById('buscador').value); }
 
-        // --- LÓGICA DE SELECCIÓN DETALLADA ---
         function abrirOpt(id) { 
             let p = store.stock.find(x => x.id === id); 
             if(p.sub && p.sub.length > 0) { 
@@ -167,7 +165,6 @@
         function sumarFinal(i) { 
             let sO = tempP.sub[i]; 
             let ex = (sO.n.includes('Patacón')) ? 1000 : 0; 
-            // Esto hace que el nombre sea "Empanada Carne" en el carrito
             const nombreCompleto = `${tempP.nombre} ${sO.n}`;
             addCarrito(tempP.id, nombreCompleto, tempP.precio + ex, i); 
             cerrarModales(); 
@@ -175,28 +172,68 @@
 
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
 
-        // --- RESTO DE FUNCIONES ---
+        // --- ADMINISTRADOR CORREGIDO (OPCIONES DETALLADAS) ---
         function abrirAdmin() {
             if(prompt("CLAVE ADMIN:") !== "1234") return;
             document.getElementById('m-admin').style.display = 'flex';
             const list = document.getElementById('lista-admin');
             list.innerHTML = `<button onclick="editBase()" class="w-full bg-blue-900/40 p-4 rounded-xl text-blue-400 font-black text-[10px] uppercase border border-blue-500 mb-4">💰 EDITAR BASE CAJA ($${f(store.base)})</button>`;
+            
             store.stock.forEach((p, idx) => {
-                list.innerHTML += `
-                <div class="bg-zinc-800 p-3 rounded-2xl flex justify-between items-center">
-                    <span class="text-[10px] font-black uppercase">${p.nombre}</span>
-                    <div class="flex gap-2">
-                        <button onclick="editP(${idx})" class="bg-orange-600 px-3 py-2 rounded-lg text-[9px] font-bold">$ ${f(p.precio)}</button>
-                        <button onclick="editC(${idx})" class="bg-zinc-600 px-3 py-2 rounded-lg text-[9px] font-bold">📦 ${p.cant || 0}</button>
-                    </div>
-                </div>`;
+                let htmlProd = `
+                <div class="bg-zinc-800 p-3 rounded-2xl border border-zinc-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-black uppercase text-yellow-500">${p.icon} ${p.nombre}</span>
+                        ${!p.sub ? `
+                        <div class="flex gap-2">
+                            <button onclick="editP(${idx})" class="bg-orange-600 px-3 py-2 rounded-lg text-[9px] font-bold">$ ${f(p.precio)}</button>
+                            <button onclick="editC(${idx})" class="bg-zinc-600 px-3 py-2 rounded-lg text-[9px] font-bold">📦 ${p.cant || 0}</button>
+                        </div>` : ''}
+                    </div>`;
+
+                // Si tiene sub-opciones (sabores), las listamos para editar una por una
+                if(p.sub) {
+                    htmlProd += `<div class="space-y-1 mt-2 border-t border-zinc-700 pt-2">`;
+                    p.sub.forEach((s, sIdx) => {
+                        htmlProd += `
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded-lg">
+                            <span class="text-[8px] text-zinc-400 uppercase font-bold">${s.n}</span>
+                            <div class="flex gap-1">
+                                <button onclick="editSubPrecio(${idx}, ${sIdx})" class="bg-zinc-700 px-2 py-1 rounded text-[8px]">$ ${f(p.precio + (s.n.includes('Patacón') ? 1000 : 0))}</button>
+                                <button onclick="editSubStock(${idx}, ${sIdx})" class="bg-zinc-700 px-2 py-1 rounded text-[8px]">📦 ${s.c}</button>
+                            </div>
+                        </div>`;
+                    });
+                    htmlProd += `</div>`;
+                }
+                
+                htmlProd += `</div>`;
+                list.innerHTML += htmlProd;
             });
         }
 
+        // Funciones de edición para productos SIMPLES
         function editBase() { const n = parseInt(prompt("Nueva Base $:", store.base)); if(!isNaN(n)) db.ref('/niza_v31_rep').update({ base: n }); }
         function editP(i) { const n = parseInt(prompt("Nuevo Precio $:", store.stock[i].precio)); if(!isNaN(n)) { store.stock[i].precio = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
         function editC(i) { const n = parseInt(prompt("Nueva Cantidad:", store.stock[i].cant)); if(!isNaN(n)) { store.stock[i].cant = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
 
+        // Funciones de edición para SUB-PRODUCTOS (SABORES)
+        function editSubPrecio(pIdx, sIdx) {
+            const n = parseInt(prompt(`Nuevo precio base para ${store.stock[pIdx].nombre}:`, store.stock[pIdx].precio));
+            if(!isNaN(n)) {
+                store.stock[pIdx].precio = n;
+                db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => abrirAdmin());
+            }
+        }
+        function editSubStock(pIdx, sIdx) {
+            const n = parseInt(prompt(`Nuevo Stock para ${store.stock[pIdx].sub[sIdx].n}:`, store.stock[pIdx].sub[sIdx].c));
+            if(!isNaN(n)) {
+                store.stock[pIdx].sub[sIdx].c = n;
+                db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => abrirAdmin());
+            }
+        }
+
+        // --- RESTO DE LÓGICA DE CIERRE Y COBRO ---
         function cierreDia() {
             if(prompt("CLAVE CIERRE:") === "1234" && confirm("¿Cerrar día?")) {
                 const { fecha, hora } = getColTime();
@@ -229,8 +266,7 @@
 
         function verHistorial() {
             document.getElementById('m-historial').style.display = 'flex';
-            const list = document.getElementById('lista-historial');
-            list.innerHTML = '<p class="text-center text-zinc-500 text-[10px]">Cargando...</p>';
+            const list = document.getElementById('lista-historial'); list.innerHTML = 'Cargando...';
             db.ref('/historico_cierres').limitToLast(20).once('value', (snap) => {
                 list.innerHTML = ''; cierresCache = snap.val() || {};
                 Object.keys(cierresCache).reverse().forEach(id => {
@@ -243,7 +279,7 @@
                                 <div><p class="text-[7px] text-zinc-500 uppercase font-bold">Gasto</p><p class="text-red-400 text-[9px] font-black">-$${f(c.g)}</p></div>
                                 <div><p class="text-[7px] text-zinc-500 uppercase font-bold">Caja</p><p class="text-white text-[9px] font-black">$${f(c.tot)}</p></div>
                             </div>
-                            <button onclick="verDetalleCierre('${id}')" class="w-full bg-purple-600/20 py-2 rounded-lg text-purple-400 text-[9px] font-black uppercase tap">Ver Detalle / Excel</button>
+                            <button onclick="verDetalleCierre('${id}')" class="w-full bg-purple-600/20 py-2 rounded-lg text-purple-400 text-[9px] font-black uppercase tap">Detalle / Excel</button>
                         </div>`;
                 });
             });
@@ -254,46 +290,4 @@
             document.getElementById('m-detalle-cierre').style.display = 'flex';
             document.getElementById('det-fecha').innerText = `DÍA: ${c.fecha}`;
             document.getElementById('det-meta').innerText = `HORA: ${c.hora} | VENDEDOR: ${c.u}`;
-            document.getElementById('btn-excel-pasado').onclick = () => exportarCierrePasado(id);
-            const list = document.getElementById('det-items'); list.innerHTML = '';
-            if(c.items) c.items.forEach(i => { list.innerHTML += `<div class="bg-zinc-900 p-2 rounded flex justify-between text-[9px] border-b border-white/5"><span>${i.t} <b>${i.n}</b></span><span class="text-green-500 font-black">$${f(i.v)}</span></div>`; });
-            if(c.gastos_det) c.gastos_det.forEach(g => { list.innerHTML += `<div class="bg-red-900/10 p-2 rounded flex justify-between text-[9px] italic"><span>${g.t} - ${g.d}</span><span class="text-red-400">-$${f(g.v)}</span></div>`; });
-        }
-
-        function exportarCierrePasado(id) {
-            const c = cierresCache[id];
-            const data = (c.items || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-            XLSX.writeFile(wb, `NIZA_Ventas_${c.fecha}.xlsx`);
-        }
-
-        function exportarExcelHoy() {
-            const data = (store.h_v || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Hoy");
-            XLSX.writeFile(wb, `NIZA_HOY_${getColTime().fecha}.xlsx`);
-        }
-
-        function abrirReportes() {
-            document.getElementById('m-reportes').style.display = 'flex';
-            const list = document.getElementById('lista-reporte'); list.innerHTML = '';
-            const all = [...(store.h_v || []), ...(store.h_g || []).map(g => ({...g, isGasto: true}))].sort((a,b) => b.t.localeCompare(a.t));
-            all.forEach(x => {
-                if(x.isGasto) list.innerHTML += `<div class="bg-red-900/10 p-2 rounded border-l-4 border-red-600 text-[9px] mb-1"><div class="flex justify-between font-black"><span>${x.t} - GASTO: ${x.d}</span><span class="text-red-400">-$${f(x.v)}</span></div></div>`;
-                else list.innerHTML += `<div class="bg-zinc-800 p-2 rounded border-l-4 border-green-600 text-[9px] mb-1"><div class="flex justify-between font-black"><span>${x.t} - ${x.n} (${x.m})</span><span class="text-green-400">$${f(x.v)}</span></div></div>`;
-            });
-        }
-
-        function quitarI(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); }
-        function vaciarCarrito() { if(confirm("¿Vaciar?")) { carrito = []; descAct = 0; actualizarTotal(); } }
-        function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
-        function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-        function addDomi() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } }
-        function aplicarDescuento() { if(carrito.length > 0) { const v = parseInt(prompt("Descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } }
-        function abrirGasto() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || []; h.push({ v, d, u: uAct, t: hora, fecha }); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
-    </script>
-</body>
-</html>
+            document.getElementById('btn-excel-pasado').onclick = () => export
