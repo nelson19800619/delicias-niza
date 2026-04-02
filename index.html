@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V37 STABLE</title>
+    <title>NIZA V38 FINAL-LINE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .tap:active { transform: scale(0.95); opacity: 0.8; }
-        
-        /* RESET TOTAL PARA EVITAR ERRORES DE CARGA */
+        .tap:active { transform: scale(0.92); opacity: 0.8; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             background-color: #000; 
             color: white; 
-            font-family: system-ui, -apple-system, sans-serif; 
+            font-family: sans-serif; 
             margin: 0; 
             overflow: hidden; 
             height: 100vh;
@@ -24,85 +22,72 @@
             flex-direction: column;
         }
         
-        /* CABECERA */
-        .niza-header { 
-            height: 70px; 
-            flex-shrink: 0; 
-            background: #7f1d1d; 
-            border-bottom: 2px solid #fbbf24; 
-            padding: 5px 10px; 
-        }
-        
-        /* CUERPO PRINCIPAL */
-        .niza-main { 
-            display: flex; 
-            flex: 1; 
-            overflow: hidden; 
-            background: #000;
-        }
-        
-        .col-izq { 
-            width: 55%; 
-            overflow-y: auto; 
-            padding: 8px; 
-            border-right: 1px solid #27272a; 
-        }
-        
-        .col-der { 
-            width: 45%; 
-            overflow-y: auto; 
-            padding: 8px; 
-            background: #09090b; 
-        }
+        .niza-header { height: 75px; flex-shrink: 0; background: #7f1d1d; border-bottom: 2px solid #fbbf24; padding: 5px 10px; }
+        .niza-main { display: flex; flex: 1; overflow: hidden; }
+        .col-izq { width: 55%; overflow-y: auto; padding: 6px; border-right: 1px solid #27272a; }
+        .col-der { width: 45%; overflow-y: auto; padding: 6px; background: #09090b; }
 
-        .item-cart { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: #18181b; 
-            padding: 8px; 
-            border-radius: 8px; 
-            margin-bottom: 6px; 
-            border-left: 3px solid #f97316; 
-        }
-
-        /* BARRA INFERIOR ELEVADA (PROTECCIÓN CONTRA BOTONES DEL CELULAR) */
+        /* BARRA INFERIOR CON FRANJA DE CIERRE */
         .niza-footer { 
-            height: 110px; 
             flex-shrink: 0; 
             background: #111; 
             border-top: 1px solid #3f3f46; 
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 2.4fr;
-            gap: 8px;
-            padding: 12px 12px 35px 12px; /* Margen inferior de 35px para que no lo tape el sistema */
+            display: flex;
+            flex-direction: column;
             z-index: 100;
+        }
+
+        .contenedor-botones {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 2.5fr;
+            gap: 8px;
+            padding: 12px 12px 10px 12px; /* Espacio para los botones */
+        }
+
+        /* FRANJA FINAL DE DEMARCACIÓN */
+        .franja-final {
+            height: 25px; /* Espacio extra para que el sistema del cel no tape nada */
+            background: #fbbf24; /* Color amarillo para que se note el fin */
+            width: 100%;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .franja-final::after {
+            content: "NIZA ELITE V38 • SEGURIDAD ACTIVA";
+            color: black;
+            font-size: 7px;
+            font-weight: 900;
+            letter-spacing: 1px;
         }
 
         .btn-tool {
             background: #27272a;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 55px;
-            border: 1px solid #3f3f46;
+            border: 1px solid #52525b;
         }
-        .btn-tool span { font-size: 8px; font-weight: bold; color: #a1a1aa; margin-top: 2px; }
+        /* Nombres de botones más visibles */
+        .btn-tool b { font-size: 9px; color: #fff; margin-top: 3px; text-transform: uppercase; }
 
         .btn-pay {
             background: #15803d;
-            border-radius: 12px;
+            border-radius: 10px;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             height: 55px;
-            box-shadow: 0 4px 0 #166534;
+            box-shadow: 0 4px 0 #14532d;
         }
 
+        .item-cart { display: flex; justify-content: space-between; align-items: center; background: #18181b; padding: 6px; border-radius: 6px; margin-bottom: 4px; border-left: 3px solid #f97316; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -110,22 +95,22 @@
 
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1">
-            <h1 class="font-black italic text-xs text-yellow-400">NIZA V37</h1>
+            <h1 class="font-black italic text-xs text-yellow-400">NIZA V38</h1>
             <div class="flex gap-2">
                 <button onclick="verHistorial()" class="bg-zinc-800 px-3 py-1 rounded text-xs tap">🕒</button>
                 <button onclick="accesoAdmin()" class="bg-zinc-800 px-3 py-1 rounded text-xs tap">⚙️</button>
             </div>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="bg-black/40 rounded py-0.5 text-green-400 text-[10px] font-bold" id="v-ventas">$ 0</div>
-            <div class="bg-black/40 rounded py-0.5 text-red-400 text-[10px] font-bold" id="v-gastos">$ 0</div>
-            <div class="bg-orange-600 rounded py-0.5 text-white text-[10px] font-bold" id="v-total">$ 0</div>
+            <div class="bg-black/20 rounded py-0.5 text-green-400 text-[11px] font-bold" id="v-ventas">$ 0</div>
+            <div class="bg-black/20 rounded py-0.5 text-red-400 text-[11px] font-bold" id="v-gastos">$ 0</div>
+            <div class="bg-orange-600 rounded py-0.5 text-white text-[11px] font-bold" id="v-total">$ 0</div>
         </div>
     </header>
 
     <div class="niza-main">
         <div class="col-izq">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm outline-none">
+            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-2 border border-zinc-800 text-sm outline-none">
             <div id="menu" class="grid grid-cols-2 gap-2"></div>
         </div>
         <div class="col-der">
@@ -134,23 +119,26 @@
     </div>
 
     <footer class="niza-footer">
-        <button onclick="addDomi()" class="btn-tool text-blue-400 tap">
-            🛵 <span>Domi</span>
-        </button>
-        <button onclick="aplicarDescuento()" class="btn-tool text-orange-400 tap">
-            🏷️ <span>Desc</span>
-        </button>
-        <button onclick="abrirGasto()" class="btn-tool text-red-400 tap">
-            💸 <span>Gasto</span>
-        </button>
-        
-        <button onclick="irAPagar()" class="btn-pay tap">
-            <div class="text-right">
-                <p class="text-[7px] uppercase font-bold">COBRAR</p>
-                <p id="t-ped" class="text-lg font-black leading-none">$ 0</p>
-            </div>
-            <span class="text-xl">💰</span>
-        </button>
+        <div class="contenedor-botones">
+            <button onclick="addDomi()" class="btn-tool text-blue-400 tap">
+                <span>🛵</span> <b>Domi</b>
+            </button>
+            <button onclick="aplicarDescuento()" class="btn-tool text-orange-400 tap">
+                <span>🏷️</span> <b>Desc</b>
+            </button>
+            <button onclick="abrirGasto()" class="btn-tool text-red-400 tap">
+                <span>💸</span> <b>Gasto</b>
+            </button>
+            
+            <button onclick="irAPagar()" class="btn-pay tap">
+                <div class="text-right">
+                    <p class="text-[8px] font-black opacity-90 leading-none">PAGAR</p>
+                    <p id="t-ped" class="text-lg font-black leading-none">$ 0</p>
+                </div>
+                <span class="text-xl">💰</span>
+            </button>
+        </div>
+        <div class="franja-final"></div>
     </footer>
 
     <div id="m-pago" class="modal">
@@ -158,11 +146,11 @@
             <h2 class="text-white font-bold mb-6 uppercase">Método de Pago</h2>
             <button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-bold mb-4 tap text-white">💵 EFECTIVO</button>
             <button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-bold tap text-white">📱 TRANSFERENCIA</button>
-            <button onclick="cerrarModales()" class="mt-6 text-zinc-500 font-bold">Cerrar</button>
+            <button onclick="cerrarModales()" class="mt-4 text-zinc-500 font-bold uppercase text-xs">← Cancelar</button>
         </div>
     </div>
 
-    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center shadow-2xl"><h2 class="text-white font-black mb-4 uppercase text-sm italic">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
+    <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center shadow-2xl"><h2 class="text-white font-black mb-4 uppercase text-sm italic text-yellow-500">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
     <div id="m-opciones" class="modal"><div class="bg-zinc-900 p-5 rounded-2xl w-72 border border-orange-500 shadow-2xl"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center text-xs">Opciones</h2><div id="opt-c" class="flex flex-col gap-2"></div><button onclick="cerrarModales()" class="mt-4 text-zinc-600 text-[10px] w-full text-center uppercase font-bold">Volver</button></div></div>
 
     <script>
