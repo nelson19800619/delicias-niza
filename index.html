@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V48 - REPORTES & EXCEL</title>
+    <title>NIZA V49 - CONTROL ELITE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,16 +23,20 @@
         .btn-pay { background: #15803d; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; height: 52px; border-bottom: 3px solid #14532d; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .item-cart { display: flex; justify-content: space-between; align-items: center; background: #18181b; padding: 8px; border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #f97316; }
+        .item-desc { border-left-color: #ef4444; background: #450a0a; }
     </style>
 </head>
 <body>
 
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
-            <h1 class="font-black italic text-xs text-yellow-400">NIZA V48</h1>
+            <div class="flex items-center gap-2">
+                <h1 class="font-black italic text-xs text-yellow-400">NIZA V49</h1>
+                <span id="label-u" class="bg-white/10 px-2 py-0.5 rounded text-[8px] text-zinc-300 uppercase"></span>
+            </div>
             <div class="flex gap-1.5">
-                <button onclick="cierreDia()" class="bg-red-600 px-2 py-1 rounded text-[8px] font-black tap">CIERRE</button>
-                <button onclick="abrirReportes()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap">📊</button>
+                <button onclick="cierreDia()" class="bg-red-600 px-2 py-1 rounded text-[8px] font-black tap text-white">CIERRE</button>
+                <button onclick="abrirReportes()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap text-white">📊</button>
                 <button onclick="location.reload()" class="bg-zinc-800 px-2 py-1 rounded text-[10px] tap">🔄</button>
                 <button onclick="accesoAdmin()" class="bg-zinc-800 px-2 py-1 rounded text-[10px] tap">⚙️</button>
             </div>
@@ -59,7 +63,7 @@
 
     <div class="niza-main">
         <div class="col-izq">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm">
+            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm outline-none">
             <div id="menu" class="grid grid-cols-2 gap-2"></div>
         </div>
         <div class="col-der"><div id="lista-carrito"></div></div>
@@ -73,33 +77,30 @@
             <button onclick="abrirGasto()" class="btn-tool text-red-400 tap"><span>💸</span><b>Gasto</b></button>
             <button onclick="irAPagar()" class="btn-pay tap"><div class="text-right"><p class="text-[8px] font-black uppercase">Pagar</p><p id="t-ped" class="text-lg font-black">$ 0</p></div><span>💰</span></button>
         </div>
-        <div class="h-6 bg-yellow-500 flex items-center justify-center text-[9px] font-black text-black uppercase">NIZA ELITE V48 • REPORTES ACTIVOS</div>
     </footer>
 
     <div id="m-reportes" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-blue-500">
-            <h2 class="text-blue-400 font-black mb-4 uppercase text-center italic">Reporte de Ventas</h2>
-            <button onclick="exportarExcel()" class="w-full bg-green-700 py-3 rounded-xl mb-4 font-black text-[10px] uppercase flex items-center justify-center gap-2">
-                <span>📥</span> EXPORTAR A EXCEL
-            </button>
-            <div id="lista-reporte" class="text-[10px] space-y-1"></div>
+            <h2 class="text-blue-400 font-black mb-4 uppercase text-center italic">Reporte Detallado</h2>
+            <button onclick="exportarExcel()" class="w-full bg-green-700 py-3 rounded-xl mb-4 font-black text-[10px] uppercase text-white">📥 Descargar Excel</button>
+            <div id="lista-reporte" class="space-y-2"></div>
             <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-4 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
     </div>
 
     <div id="m-admin" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-yellow-500">
-            <h2 class="text-yellow-500 font-black mb-6 uppercase text-center text-sm">Configuración</h2>
-            <div class="mb-6 p-3 bg-blue-900/20 rounded-xl border border-blue-500/30">
-                <p class="text-blue-400 font-black text-[10px] mb-2 uppercase">💰 Base de Caja Inicial</p>
-                <input type="number" id="adm-base" class="w-full bg-black p-3 rounded-xl border border-zinc-700 text-white font-bold" onchange="updBase(this.value)">
+            <h2 class="text-yellow-500 font-black mb-4 uppercase text-center text-sm">Panel de Control</h2>
+            <div class="mb-6 p-4 bg-blue-900/10 rounded-xl border border-blue-500/30">
+                <p class="text-blue-400 font-black text-[9px] mb-2 uppercase italic">Ajuste de Base Inicial</p>
+                <input type="number" id="adm-base" class="w-full bg-black p-3 rounded-xl border border-zinc-700 text-white font-black" onchange="updBase(this.value)">
             </div>
             <div id="admin-list"></div>
             <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-4 font-black text-[10px] uppercase">Cerrar</button>
         </div>
     </div>
 
-    <div id="m-pago" class="modal"><div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center"><h2 class="text-white font-black mb-6 uppercase">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap">💵 EFECTIVO</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap">📱 TRANSF.</button><button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button></div></div>
+    <div id="m-pago" class="modal"><div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center text-white"><h2 class="font-black mb-6 uppercase">¿Cómo pagan?</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap">💵 EFECTIVO</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap">📱 TRANSF.</button><button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button></div></div>
     <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase text-xs italic text-yellow-500">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
     <div id="m-opciones" class="modal"><div class="bg-zinc-900 p-5 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center text-xs"></h2><div id="opt-c" class="flex flex-col gap-2"></div><button onclick="cerrarModales()" class="mt-4 text-zinc-600 text-[10px] w-full text-center">Volver</button></div></div>
 
@@ -117,7 +118,7 @@
         const uDiv = document.getElementById('user-btns');
         users.forEach(u => { uDiv.innerHTML += `<button onclick="setU('${u}')" class="bg-zinc-800 py-3 rounded-lg font-bold tap text-[10px] text-white uppercase">${u}</button>`; });
 
-        function setU(n) { uAct = n; document.getElementById('m-user').style.display = 'none'; db.ref('/niza_v31_rep').on('value', (snap) => { store = snap.val(); if(store) draw(); }); }
+        function setU(n) { uAct = n; document.getElementById('label-u').innerText = n; document.getElementById('m-user').style.display = 'none'; db.ref('/niza_v31_rep').on('value', (snap) => { store = snap.val(); if(store) draw(); }); }
 
         function draw(filtro = "") {
             const m = document.getElementById('menu'); m.innerHTML = '';
@@ -129,105 +130,104 @@
             document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
             document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
+            actualizarTotal();
         }
 
         function abrirReportes() {
             document.getElementById('m-reportes').style.display = 'flex';
             const list = document.getElementById('lista-reporte');
-            list.innerHTML = store.h_v ? '' : '<p class="text-center text-zinc-500">No hay registros</p>';
-            (store.h_v || []).forEach(v => {
-                list.innerHTML += `<div class="bg-zinc-800 p-2 rounded flex justify-between border-l-2 border-green-500">
-                    <span>${v.t} - ${v.n} (${v.m})</span>
-                    <span class="font-bold">$${f(v.v)}</span>
-                </div>`;
+            list.innerHTML = '';
+            const all = [...(store.h_v || []), ...(store.h_g || []).map(g => ({...g, isGasto: true}))].sort((a,b) => b.t.localeCompare(a.t));
+            
+            all.forEach(x => {
+                if(x.isGasto) {
+                    list.innerHTML += `<div class="bg-red-900/20 p-2 rounded border-l-4 border-red-600 text-[9px]"><div class="flex justify-between font-black"><span>GASTO: ${x.d}</span><span class="text-red-400">-$${f(x.v)}</span></div><div class="text-zinc-500 uppercase mt-1">Por: ${x.u} • ${x.t}</div></div>`;
+                } else {
+                    list.innerHTML += `<div class="bg-zinc-800 p-2 rounded border-l-4 border-green-600 text-[9px]"><div class="flex justify-between font-black"><span>${x.n} (${x.m})</span><span class="text-green-400">$${f(x.v)}</span></div><div class="text-zinc-500 uppercase mt-1">Por: ${x.u} • ${x.t}</div></div>`;
+                }
             });
-            (store.h_g || []).forEach(g => {
-                list.innerHTML += `<div class="bg-zinc-800 p-2 rounded flex justify-between border-l-2 border-red-500 opacity-70">
-                    <span>${g.t} - GASTO: ${g.d}</span>
-                    <span class="font-bold text-red-400">-$${f(g.v)}</span>
-                </div>`;
+        }
+
+        function doCobro(met) {
+            const { fecha, hora } = getColTime();
+            let textoW = `*DELICIAS NIZA - RECIBO*%0AAtendido por: ${uAct}%0AFecha: ${fecha} - ${hora}%0A----------------------------%0A`;
+            const h = store.h_v || [];
+            carrito.forEach(i => {
+                h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
+                textoW += `• ${i.n} -> $${f(i.v)}%0A`;
+                let p = store.stock.find(x => x.id === i.id);
+                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
             });
+            if(descAct > 0) { 
+                h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met }); 
+                textoW += `%0A*DESC: -$${f(descAct)}*%0A`;
+            }
+            textoW += `----------------------------%0A*TOTAL PAGADO: $${f(pedTot)}*%0A*Medio: ${met}*%0A%0A¡Gracias por su compra! 🥟`;
+            
+            db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
+                if(confirm("¿Enviar Recibo a WhatsApp?")) window.open(`https://wa.me/?text=${textoW}`, '_blank');
+                cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
+            });
+        }
+
+        function actualizarTotal() {
+            pedTot = carrito.reduce((a, x) => a + x.v, 0) - descAct;
+            document.getElementById('t-ped').innerText = "$ " + f(pedTot);
+            const c = document.getElementById('lista-carrito');
+            c.innerHTML = '';
+            carrito.forEach((item, i) => {
+                c.innerHTML += `<div class="item-cart"><div><p class="text-[9px] font-black uppercase text-white">${item.n}</p><p class="text-[8px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-600/30 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`;
+            });
+            if(descAct > 0) {
+                c.innerHTML += `<div class="item-cart item-desc"><div><p class="text-[9px] font-black uppercase text-red-100">DESC. APLICADO</p><p class="text-[8px] text-red-200 font-bold">-$ ${f(descAct)}</p></div><button onclick="descAct=0;actualizarTotal()" class="bg-red-400 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`;
+            }
         }
 
         function exportarExcel() {
-            const data = (store.h_v || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Usuario: v.u, Metodo: v.m }));
+            const data = (store.h_v || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Item: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-            XLSX.writeFile(wb, `Reporte_Niza_${getColTime().fecha}.xlsx`);
+            XLSX.writeFile(wb, `NIZA_Ventas_${getColTime().fecha}.xlsx`);
         }
 
+        // Resto de funciones (admin, opt, domi, etc) se mantienen iguales para estabilidad
         function accesoAdmin() {
             if(prompt("CLAVE:") === CLAVE) {
                 document.getElementById('m-admin').style.display = 'flex';
                 document.getElementById('adm-base').value = store.base || 0;
                 const list = document.getElementById('admin-list'); list.innerHTML = '';
                 store.stock.forEach((p, pIdx) => {
-                    let html = `<div class="bg-zinc-800 p-3 rounded-xl mb-3 border border-zinc-700"><p class="text-yellow-500 font-black text-[10px] mb-2 uppercase">${p.nombre}</p>`;
+                    let html = `<div class="bg-zinc-800 p-3 rounded-xl mb-3 border border-zinc-700 text-white"><p class="text-yellow-500 font-black text-[9px] mb-2 uppercase">${p.nombre}</p>`;
                     if(p.sub) {
                         p.sub.forEach((s, sIdx) => {
                             html += `<div class="grid grid-cols-2 gap-2 mb-2 bg-black/30 p-2 rounded-lg">
-                                <span class="text-[8px] col-span-2 text-zinc-400 font-bold uppercase">${s.n}</span>
-                                <input type="number" value="${p.precio}" onchange="updSub(${pIdx}, ${sIdx}, 'precio', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px] text-white">
-                                <input type="number" value="${s.c}" onchange="updSub(${pIdx}, ${sIdx}, 'cant', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px] text-white">
+                                <span class="text-[7px] col-span-2 text-zinc-500 font-bold uppercase">${s.n}</span>
+                                <input type="number" value="${p.precio}" onchange="updSub(${pIdx}, ${sIdx}, 'precio', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px]">
+                                <input type="number" value="${s.c}" onchange="updSub(${pIdx}, ${sIdx}, 'cant', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px]">
                             </div>`;
                         });
                     } else {
-                        html += `<div class="grid grid-cols-2 gap-2">
-                            <input type="number" value="${p.precio}" onchange="upd(${pIdx},'precio',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs text-white">
-                            <input type="number" value="${p.cant}" onchange="upd(${pIdx},'cant',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs text-white">
-                        </div>`;
+                        html += `<div class="grid grid-cols-2 gap-2"><input type="number" value="${p.precio}" onchange="upd(${pIdx},'precio',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs"><input type="number" value="${p.cant}" onchange="upd(${pIdx},'cant',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs"></div>`;
                     }
                     list.innerHTML += html + `</div>`;
                 });
             }
         }
-
         function updBase(v) { db.ref('/niza_v31_rep').update({ base: parseInt(v) }); }
         function upd(i, c, v) { store.stock[i][c] = parseInt(v); db.ref('/niza_v31_rep').update({ stock: store.stock }); }
-        function updSub(pI, sI, campo, valor) {
-            if(campo === 'precio') store.stock[pI].precio = parseInt(valor);
-            else store.stock[pI].sub[sI].c = parseInt(valor);
-            db.ref('/niza_v31_rep').update({ stock: store.stock });
-        }
-
-        function cierreDia() {
-            if(prompt("CLAVE CIERRE:") === CLAVE) {
-                if(confirm("¿Cerrar día? Se reiniciarán Ventas y Gastos.")) {
-                    db.ref('/niza_v31_rep').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { location.reload(); });
-                }
-            }
-        }
-
-        function doCobro(met) {
-            const { fecha, hora } = getColTime();
-            let textoW = `*DELICIAS NIZA - RECIBO*%0A%0A`;
-            const h = store.h_v || [];
-            carrito.forEach(i => {
-                h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
-                textoW += `• ${i.n} - $${f(i.v)}%0A`;
-                let p = store.stock.find(x => x.id === i.id);
-                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
-            });
-            if(descAct > 0) { h.push({ n: "DESC", v: -descAct, u: uAct, t: hora, fecha, m: met }); textoW += `Descuento: -$${f(descAct)}%0A`; }
-            textoW += `%0A*TOTAL: $${f(pedTot)}*`;
-            db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
-                if(confirm("¿Enviar WhatsApp?")) window.open(`https://wa.me/?text=${textoW}`, '_blank');
-                cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
-            });
-        }
-
+        function updSub(pI, sI, campo, valor) { if(campo === 'precio') store.stock[pI].precio = parseInt(valor); else store.stock[pI].sub[sI].c = parseInt(valor); db.ref('/niza_v31_rep').update({ stock: store.stock }); }
+        function cierreDia() { if(prompt("CLAVE CIERRE:") === CLAVE && confirm("¿Cerrar día?")) db.ref('/niza_v31_rep').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => location.reload()); }
         function abrirOpt(id) { 
             let p = store.stock.find(x => x.id === id); 
             if(p.sub) { 
                 tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; 
-                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
+                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4 text-white"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
                 document.getElementById('m-opciones').style.display = 'flex'; 
             } else { addCarrito(p.id, p.nombre, p.precio, null); } 
         }
         function sumarFinal(i) { let sO = tempP.sub[i]; let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarModales(); }
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
-        function actualizarTotal() { pedTot = carrito.reduce((a, x) => a + x.v, 0) - descAct; document.getElementById('t-ped').innerText = "$ " + f(pedTot); const c = document.getElementById('lista-carrito'); c.innerHTML = ''; carrito.forEach((item, i) => { c.innerHTML += `<div class="item-cart"><div><p class="text-[10px] font-black uppercase">${item.n}</p><p class="text-[9px] text-orange-400">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`; }); }
         function quitarI(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); }
         function vaciarCarrito() { if(confirm("¿Vaciar?")) { carrito = []; descAct = 0; actualizarTotal(); } }
         function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
