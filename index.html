@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V52 - EXCEL HISTÓRICO</title>
+    <title>NIZA V53 - BUSCADOR FIX</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +30,7 @@
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
             <div class="flex items-center gap-2">
-                <h1 class="font-black italic text-xs text-yellow-400">NIZA V52</h1>
+                <h1 class="font-black italic text-xs text-yellow-400">NIZA V53</h1>
                 <span id="label-u" class="bg-white/10 px-2 py-0.5 rounded text-[8px] text-zinc-300 uppercase font-bold"></span>
             </div>
             <div class="flex gap-1.5">
@@ -49,7 +49,7 @@
 
     <div class="niza-main">
         <div class="col-izq">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm outline-none">
+            <input type="text" id="buscador" oninput="buscar()" placeholder="🔍 Buscar producto..." class="w-full bg-zinc-900 text-white p-3 rounded-xl mb-3 border border-zinc-700 text-sm outline-none focus:border-yellow-500">
             <div id="menu" class="grid grid-cols-2 gap-2"></div>
         </div>
         <div class="col-der"><div id="lista-carrito"></div></div>
@@ -89,9 +89,7 @@
         <div class="bg-black p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-yellow-500">
             <h2 id="det-fecha" class="text-yellow-500 font-black mb-2 uppercase text-center text-xs"></h2>
             <p id="det-meta" class="text-[9px] text-zinc-500 text-center mb-4 uppercase"></p>
-            
             <button id="btn-excel-pasado" class="w-full bg-green-700 py-3 rounded-xl mb-4 font-black text-[9px] uppercase text-white tap">📥 Descargar este día (Excel)</button>
-            
             <div id="det-items" class="space-y-1.5"></div>
             <button onclick="document.getElementById('m-detalle-cierre').style.display='none'" class="w-full bg-zinc-800 py-4 rounded-xl mt-4 font-bold uppercase text-[10px]">Cerrar Detalle</button>
         </div>
@@ -117,14 +115,34 @@
 
         function setU(n) { uAct = n; document.getElementById('label-u').innerText = n; document.getElementById('m-user').style.display = 'none'; db.ref('/niza_v31_rep').on('value', (snap) => { store = snap.val(); if(store) draw(); }); }
 
-        function draw() {
+        // DIBUJAR MENÚ CON FILTRO
+        function draw(filtro = "") {
             const m = document.getElementById('menu'); m.innerHTML = '';
-            store.stock.forEach(p => { m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5"><div class="text-xl">${p.icon}</div><div class="text-[9px] font-black uppercase text-zinc-400">${p.nombre}</div><div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div></div>`; });
+            if(!store.stock) return;
+            
+            store.stock.forEach(p => {
+                // Lógica de búsqueda: convierte a minúsculas para comparar
+                if(filtro && !p.nombre.toLowerCase().includes(filtro.toLowerCase())) return;
+
+                m.innerHTML += `
+                <div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5">
+                    <div class="text-xl">${p.icon}</div>
+                    <div class="text-[9px] font-black uppercase text-zinc-400">${p.nombre}</div>
+                    <div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div>
+                </div>`;
+            });
+
             document.getElementById('v-base').innerText = "$ " + f(store.base);
             document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
             document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
             actualizarTotal();
+        }
+
+        // FUNCIÓN QUE DISPARA LA BÚSQUEDA
+        function buscar() {
+            const texto = document.getElementById('buscador').value;
+            draw(texto);
         }
 
         function cierreDia() {
@@ -163,10 +181,7 @@
             document.getElementById('m-detalle-cierre').style.display = 'flex';
             document.getElementById('det-fecha').innerText = `DÍA: ${c.fecha}`;
             document.getElementById('det-meta').innerText = `HORA: ${c.hora} | VENDEDOR: ${c.u}`;
-            
-            // Configurar botón Excel pasado
             document.getElementById('btn-excel-pasado').onclick = () => exportarCierrePasado(id);
-
             const list = document.getElementById('det-items');
             list.innerHTML = '';
             if(c.items) {
@@ -184,8 +199,7 @@
 
         function exportarCierrePasado(id) {
             const c = cierresCache[id];
-            if(!c.items) return alert("No hay ventas en este registro");
-            const data = c.items.map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
+            const data = (c.items || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Ventas");
@@ -193,12 +207,11 @@
         }
 
         function exportarExcelHoy() {
-            if(!store.h_v) return alert("No hay ventas hoy");
-            const data = store.h_v.map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
+            const data = (store.h_v || []).map(v => ({ Fecha: v.fecha, Hora: v.t, Producto: v.n, Valor: v.v, Vendedor: v.u, Pago: v.m }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Hoy");
-            XLSX.writeFile(wb, `NIZA_Ventas_HOY_${getColTime().fecha}.xlsx`);
+            XLSX.writeFile(wb, `NIZA_HOY_${getColTime().fecha}.xlsx`);
         }
 
         function abrirReportes() {
@@ -252,7 +265,6 @@
         function vaciarCarrito() { if(confirm("¿Vaciar?")) { carrito = []; descAct = 0; actualizarTotal(); } }
         function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
         function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-        function buscar() { /* Filtrado por dibujo */ }
         function addDomi() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } }
         function aplicarDescuento() { if(carrito.length > 0) { const v = parseInt(prompt("Descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } }
         function abrirGasto() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || []; h.push({ v, d, u: uAct, t: hora, fecha }); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
