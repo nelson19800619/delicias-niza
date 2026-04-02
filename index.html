@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V41 RECOVERY</title>
+    <title>NIZA V42 STABLE</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* CABECERA RESILIENTE */
         .niza-header { 
             height: 85px; 
             background: #7f1d1d; 
@@ -35,13 +34,12 @@
             flex: 1; 
             overflow: hidden;
             background: #000;
-            padding-bottom: 110px; /* Espacio para el footer fijo */
+            padding-bottom: 110px; 
         }
 
         .col-izq { width: 55%; overflow-y: auto; padding: 8px; border-right: 1px solid #27272a; }
         .col-der { width: 45%; overflow-y: auto; padding: 8px; background: #09090b; }
 
-        /* FOOTER FIJO TOTAL */
         .niza-footer { 
             position: fixed;
             bottom: 0;
@@ -52,10 +50,11 @@
             z-index: 50;
         }
 
+        /* AJUSTE PARA 5 BOTONES EN LA FILA */
         .contenedor-botones {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 2.4fr;
-            gap: 8px;
+            grid-template-columns: 0.8fr 0.8fr 0.8fr 0.8fr 2.2fr;
+            gap: 6px;
             padding: 10px;
         }
 
@@ -69,7 +68,7 @@
             height: 52px;
             border: 1px solid #52525b;
         }
-        .btn-tool b { font-size: 9px; color: #fff; text-transform: uppercase; margin-top: 2px; }
+        .btn-tool b { font-size: 8px; color: #fff; text-transform: uppercase; margin-top: 2px; }
 
         .btn-pay {
             background: #15803d;
@@ -78,7 +77,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 5px;
             height: 52px;
             border-bottom: 3px solid #14532d;
         }
@@ -103,7 +102,7 @@
 
     <header class="niza-header">
         <div class="flex justify-between items-center mb-2">
-            <h1 class="font-black italic text-xs text-yellow-400">NIZA V41 STABLE</h1>
+            <h1 class="font-black italic text-xs text-yellow-400">NIZA V42</h1>
             <div class="flex gap-2">
                 <button onclick="verHistorial()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">🕒</button>
                 <button onclick="accesoAdmin()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">⚙️</button>
@@ -127,7 +126,7 @@
 
     <div class="niza-main">
         <div class="col-izq">
-            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm outline-none focus:border-yellow-500">
+            <input type="text" id="buscador" onkeyup="buscar()" placeholder="🔍 Buscar..." class="w-full bg-zinc-900 text-white p-2 rounded-lg mb-3 border border-zinc-800 text-sm outline-none">
             <div id="menu" class="grid grid-cols-2 gap-2"></div>
         </div>
         <div class="col-der">
@@ -137,6 +136,9 @@
 
     <footer class="niza-footer">
         <div class="contenedor-botones">
+            <button onclick="vaciarCarrito()" class="btn-tool text-red-500 tap">
+                <span>🗑️</span> <b>Borrar</b>
+            </button>
             <button onclick="addDomi()" class="btn-tool text-blue-400 tap">
                 <span>🛵</span> <b>Domi</b>
             </button>
@@ -154,7 +156,7 @@
                 <span class="text-xl">💰</span>
             </button>
         </div>
-        <div class="linea-final">SISTEMA NIZA ELITE V41</div>
+        <div class="linea-final">SISTEMA NIZA ELITE V42</div>
     </footer>
 
     <div id="m-pago" class="modal">
@@ -179,108 +181,110 @@
             storageBucket: "delicias--niza.firebasestorage.app",
         };
 
-        // Inicialización segura
-        try {
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            let store = null, pedTot = 0, descAct = 0, carrito = [], uAct = "---", tempP = null;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let store = null, pedTot = 0, descAct = 0, carrito = [], uAct = "---", tempP = null;
 
-            const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
-            function getColTime() {
-                const ahora = new Date();
-                const fecha = ahora.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
-                const hora = ahora.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: false });
-                return { fecha, hora };
-            }
-
-            const users = ['Nelson', 'Jenny', 'Juan', 'Elizabeth', 'Valeria', 'Betty'];
-            const uDiv = document.getElementById('user-btns');
-            users.forEach(u => { 
-                const btn = document.createElement('button');
-                btn.className = "bg-zinc-800 py-3 rounded-lg font-bold tap text-[10px] text-white uppercase border border-white/5";
-                btn.innerText = u;
-                btn.onclick = () => setU(u);
-                uDiv.appendChild(btn);
-            });
-
-            function setU(n) {
-                uAct = n; 
-                document.getElementById('m-user').style.display = 'none';
-                db.ref('/niza_v31_rep').on('value', (snap) => {
-                    store = snap.val();
-                    if(store) draw();
-                });
-            }
-
-            window.draw = function(filtro = "") {
-                const m = document.getElementById('menu'); m.innerHTML = '';
-                store.stock.forEach(p => {
-                    if(filtro && !p.nombre.toLowerCase().includes(filtro)) return;
-                    m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5">
-                        <div class="text-xl mb-1">${p.icon}</div>
-                        <div class="text-[9px] font-black uppercase text-zinc-400 h-4 flex items-center justify-center leading-none">${p.nombre}</div>
-                        <div class="text-orange-500 font-bold text-[10px] mt-1">$ ${f(p.precio)}</div>
-                    </div>`;
-                });
-                document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
-                document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
-                document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
-            };
-
-            window.addCarrito = function(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); };
-            
-            function actualizarTotal() {
-                let b = carrito.reduce((a, x) => a + x.v, 0);
-                pedTot = b - descAct;
-                document.getElementById('t-ped').innerText = "$ " + f(pedTot);
-                renderCarrito();
-            }
-
-            function renderCarrito() { 
-                const c = document.getElementById('lista-carrito'); c.innerHTML = ''; 
-                carrito.forEach((item, i) => { 
-                    c.innerHTML += `<div class="item-cart"><div><p class="text-[10px] font-black uppercase text-white">${item.n}</p><p class="text-[9px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-6 h-6 rounded-full tap text-[10px]">✕</button></div>`; 
-                }); 
-                c.scrollTop = c.scrollHeight;
-            }
-
-            window.abrirOpt = function(id) { 
-                let p = store.stock.find(x => x.id === id); 
-                if(p.sub) { 
-                    tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; 
-                    p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
-                    document.getElementById('m-opciones').style.display = 'flex'; 
-                } else { addCarrito(p.id, p.nombre, p.precio, null); } 
-            };
-
-            window.sumarFinal = function(i) { let sO = tempP.sub[i]; let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarModales(); };
-            window.quitarI = function(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); };
-            window.irAPagar = function() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; };
-            window.cerrarModales = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
-            window.buscar = function() { draw(document.getElementById('buscador').value.toLowerCase()); };
-            
-            window.doCobro = function(met) {
-                const { fecha, hora } = getColTime();
-                const h = store.h_v || [], gv = store.global_v || [];
-                carrito.forEach(i => {
-                    const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id, psi: i.si };
-                    h.push(vO); gv.push(vO);
-                    let p = store.stock.find(x => x.id === i.id);
-                    if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
-                });
-                if(descAct > 0) { const dO = { n: "DESC", v: -descAct, u: uAct, t: hora, fecha, m: met, esDesc: true }; h.push(dO); gv.push(dO); }
-                db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => { cerrarModales(); carrito = []; descAct = 0; actualizarTotal(); });
-            };
-            
-            window.addDomi = function() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } };
-            window.aplicarDescuento = function() { if(carrito.length > 0) { const v = parseInt(prompt("Valor de descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } };
-            window.abrirGasto = function() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || [], gh = store.global_g || []; const obj = { v, d, u: uAct, t: hora, fecha, m: 'Efectivo' }; h.push(obj); gh.push(obj); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h, global_g: gh }); } };
-            window.verHistorial = function() { alert("Historial conectado."); };
-            window.accesoAdmin = function() { if(prompt("CLAVE:") === CLAVE) alert("OK"); };
-
-        } catch (e) {
-            alert("Error de conexión: " + e.message);
+        const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
+        function getColTime() {
+            const ahora = new Date();
+            const fecha = ahora.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+            const hora = ahora.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: false });
+            return { fecha, hora };
         }
+
+        const users = ['Nelson', 'Jenny', 'Juan', 'Elizabeth', 'Valeria', 'Betty'];
+        const uDiv = document.getElementById('user-btns');
+        users.forEach(u => { 
+            const btn = document.createElement('button');
+            btn.className = "bg-zinc-800 py-3 rounded-lg font-bold tap text-[10px] text-white uppercase border border-white/5";
+            btn.innerText = u;
+            btn.onclick = () => setU(u);
+            uDiv.appendChild(btn);
+        });
+
+        function setU(n) {
+            uAct = n; 
+            document.getElementById('m-user').style.display = 'none';
+            db.ref('/niza_v31_rep').on('value', (snap) => {
+                store = snap.val();
+                if(store) draw();
+            });
+        }
+
+        window.draw = function(filtro = "") {
+            const m = document.getElementById('menu'); m.innerHTML = '';
+            store.stock.forEach(p => {
+                if(filtro && !p.nombre.toLowerCase().includes(filtro)) return;
+                m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5">
+                    <div class="text-xl mb-1">${p.icon}</div>
+                    <div class="text-[9px] font-black uppercase text-zinc-400 h-4 flex items-center justify-center leading-none">${p.nombre}</div>
+                    <div class="text-orange-500 font-bold text-[10px] mt-1">$ ${f(p.precio)}</div>
+                </div>`;
+            });
+            document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
+            document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
+            document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
+        };
+
+        window.addCarrito = function(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); };
+        
+        function actualizarTotal() {
+            let b = carrito.reduce((a, x) => a + x.v, 0);
+            pedTot = b - descAct;
+            document.getElementById('t-ped').innerText = "$ " + f(pedTot);
+            renderCarrito();
+        }
+
+        function renderCarrito() { 
+            const c = document.getElementById('lista-carrito'); c.innerHTML = ''; 
+            carrito.forEach((item, i) => { 
+                c.innerHTML += `<div class="item-cart"><div><p class="text-[10px] font-black uppercase text-white">${item.n}</p><p class="text-[9px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-6 h-6 rounded-full tap text-[10px]">✕</button></div>`; 
+            }); 
+            c.scrollTop = c.scrollHeight;
+        }
+
+        window.vaciarCarrito = function() {
+            if(confirm("¿Borrar todo el pedido actual?")) {
+                carrito = [];
+                descAct = 0;
+                actualizarTotal();
+            }
+        };
+
+        window.abrirOpt = function(id) { 
+            let p = store.stock.find(x => x.id === id); 
+            if(p.sub) { 
+                tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; 
+                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
+                document.getElementById('m-opciones').style.display = 'flex'; 
+            } else { addCarrito(p.id, p.nombre, p.precio, null); } 
+        };
+
+        window.sumarFinal = function(i) { let sO = tempP.sub[i]; let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarModales(); };
+        window.quitarI = function(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); };
+        window.irAPagar = function() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; };
+        window.cerrarModales = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
+        window.buscar = function() { draw(document.getElementById('buscador').value.toLowerCase()); };
+        
+        window.doCobro = function(met) {
+            const { fecha, hora } = getColTime();
+            const h = store.h_v || [], gv = store.global_v || [];
+            carrito.forEach(i => {
+                const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id, psi: i.si };
+                h.push(vO); gv.push(vO);
+                let p = store.stock.find(x => x.id === i.id);
+                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
+            });
+            if(descAct > 0) { const dO = { n: "DESC", v: -descAct, u: uAct, t: hora, fecha, m: met, esDesc: true }; h.push(dO); gv.push(dO); }
+            db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => { cerrarModales(); carrito = []; descAct = 0; actualizarTotal(); });
+        };
+        
+        window.addDomi = function() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } };
+        window.aplicarDescuento = function() { if(carrito.length > 0) { const v = parseInt(prompt("Valor de descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } };
+        window.abrirGasto = function() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || [], gh = store.global_g || []; const obj = { v, d, u: uAct, t: hora, fecha, m: 'Efectivo' }; h.push(obj); gh.push(obj); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h, global_g: gh }); } };
+        window.verHistorial = function() { alert("Historial conectado."); };
+        window.accesoAdmin = function() { if(prompt("CLAVE:") === CLAVE) alert("OK"); };
     </script>
 </body>
 </html>
