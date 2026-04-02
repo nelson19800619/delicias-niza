@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V58 - CONFIRMACIÓN WHATSAPP</title>
+    <title>NIZA V59 - REFRESCO INSTANTÁNEO</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,7 +30,7 @@
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
             <div class="flex items-center gap-2">
-                <h1 class="font-black italic text-xs text-yellow-400">NIZA V58</h1>
+                <h1 class="font-black italic text-xs text-yellow-400">NIZA V59</h1>
                 <span id="label-u" class="bg-white/10 px-2 py-0.5 rounded text-[8px] text-zinc-300 uppercase font-bold"></span>
             </div>
             <div class="flex gap-1">
@@ -68,7 +68,7 @@
 
     <div id="m-admin" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-zinc-500">
-            <h2 class="text-white font-black mb-4 uppercase text-center italic">Inventario V58</h2>
+            <h2 class="text-white font-black mb-4 uppercase text-center italic">Inventario V59</h2>
             <div id="lista-admin" class="space-y-3"></div>
             <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-6 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
@@ -77,10 +77,7 @@
     <div id="m-reportes" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-blue-500">
             <h2 class="text-blue-400 font-black mb-4 uppercase text-center italic">Hoy</h2>
-            <div class="flex gap-2 mb-4">
-                <button onclick="exportarExcelHoy()" class="flex-1 bg-green-700 py-3 rounded-xl font-black text-[9px] uppercase text-white">📥 Excel Hoy</button>
-                <button onclick="verHistorial()" class="flex-1 bg-purple-700 py-3 rounded-xl font-black text-[9px] uppercase text-white">📜 Ver Pasados</button>
-            </div>
+            <div class="flex gap-2 mb-4"><button onclick="exportarExcelHoy()" class="flex-1 bg-green-700 py-3 rounded-xl font-black text-[9px] uppercase text-white">📥 Excel Hoy</button><button onclick="verHistorial()" class="flex-1 bg-purple-700 py-3 rounded-xl font-black text-[9px] uppercase text-white">📜 Ver Pasados</button></div>
             <div id="lista-reporte" class="space-y-2"></div>
             <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-4 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
@@ -135,6 +132,7 @@
             document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
             actualizarTotal();
+            if(document.getElementById('m-admin').style.display === 'flex') renderAdminUI();
         }
 
         function buscar() { draw(document.getElementById('buscador').value); }
@@ -157,9 +155,16 @@
 
         function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
 
+        // --- ADMINISTRADOR CON REFRESCO AUTOMÁTICO ---
         function abrirAdmin() {
-            if(prompt("CLAVE ADMIN:") !== "1234") return;
-            document.getElementById('m-admin').style.display = 'flex';
+            if(document.getElementById('m-admin').style.display !== 'flex') {
+                if(prompt("CLAVE ADMIN:") !== "1234") return;
+                document.getElementById('m-admin').style.display = 'flex';
+            }
+            renderAdminUI();
+        }
+
+        function renderAdminUI() {
             const list = document.getElementById('lista-admin');
             list.innerHTML = `<button onclick="editBase()" class="w-full bg-blue-900/40 p-4 rounded-xl text-blue-400 font-black text-[10px] uppercase border border-blue-500 mb-4">💰 BASE: $${f(store.base)}</button>`;
             store.stock.forEach((p, idx) => {
@@ -176,40 +181,27 @@
             });
         }
 
-        function editBase() { const n = parseInt(prompt("Base:", store.base)); if(!isNaN(n)) db.ref('/niza_v31_rep').update({ base: n }); }
-        function editP(i) { const n = parseInt(prompt("Precio:", store.stock[i].precio)); if(!isNaN(n)) { store.stock[i].precio = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
-        function editC(i) { const n = parseInt(prompt("Stock:", store.stock[i].cant)); if(!isNaN(n)) { store.stock[i].cant = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
-        function editStockSub(pi, si) { const n = parseInt(prompt("Stock:", store.stock[pi].sub[si].c)); if(!isNaN(n)) { store.stock[pi].sub[si].c = n; db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => abrirAdmin()); } }
+        function editBase() { const n = parseInt(prompt("Base:", store.base)); if(!isNaN(n)) db.ref('/niza_v31_rep').update({ base: n }).then(() => renderAdminUI()); }
+        function editP(i) { const n = parseInt(prompt("Precio:", store.stock[i].precio)); if(!isNaN(n)) { store.stock[i].precio = n; db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => renderAdminUI()); } }
+        function editC(i) { const n = parseInt(prompt("Stock:", store.stock[i].cant)); if(!isNaN(n)) { store.stock[i].cant = n; db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => renderAdminUI()); } }
+        function editStockSub(pi, si) { const n = parseInt(prompt("Stock:", store.stock[pi].sub[si].c)); if(!isNaN(n)) { store.stock[pi].sub[si].c = n; db.ref('/niza_v31_rep').update({ stock: store.stock }).then(() => renderAdminUI()); } }
 
-        // --- PAGO CON PREGUNTA DE WHATSAPP ---
+        // --- PAGO Y WHATSAPP ---
         function doCobro(met) {
             const { fecha, hora } = getColTime();
             const h = store.h_v || [];
             const enviaWPP = confirm("¿Enviar comprobante a WhatsApp?");
-
-            let msg = `*DELICIAS NIZA - VENTA*%0A`;
-            msg += `*Atendió:* ${uAct}%0A`;
-            msg += `*Fecha:* ${fecha} ${hora}%0A`;
-            msg += `*Pago:* ${met}%0A-----------------%0A`;
-
+            let msg = `*DELICIAS NIZA - VENTA*%0A*Atendió:* ${uAct}%0A*Fecha:* ${fecha} ${hora}%0A*Pago:* ${met}%0A-----------------%0A`;
             carrito.forEach(i => {
                 h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
                 if(enviaWPP) msg += `• ${i.n} - $${f(i.v)}%0A`;
                 let p = store.stock.find(x => x.id === i.id);
                 if(p) { if(i.si !== null && p.sub) p.sub[i.si].c--; else p.cant--; }
             });
-
-            if(descAct > 0) {
-                h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met });
-                if(enviaWPP) msg += `*Desc:* -$${f(descAct)}%0A`;
-            }
+            if(descAct > 0) { h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met }); if(enviaWPP) msg += `*Desc:* -$${f(descAct)}%0A`; }
             if(enviaWPP) msg += `-----------------%0A*TOTAL: $${f(pedTot)}*`;
-
             db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
-                if(enviaWPP) {
-                    const tel = "573163351989";
-                    window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
-                }
+                if(enviaWPP) { window.open(`https://wa.me/573163351989?text=${msg}`, '_blank'); }
                 cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
             });
         }
@@ -222,6 +214,7 @@
             if(descAct > 0) c.innerHTML += `<div class="item-cart bg-red-900/40"><div><p class="text-[9px] font-black text-red-100">DESC.</p><p class="text-[8px] text-red-200">-$ ${f(descAct)}</p></div></div>`;
         }
 
+        // --- HISTORIAL Y REPORTES ---
         function verHistorial() {
             document.getElementById('m-historial').style.display = 'flex';
             const list = document.getElementById('lista-historial'); list.innerHTML = 'Cargando...';
