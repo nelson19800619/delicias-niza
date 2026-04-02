@@ -194,4 +194,48 @@
         function cierreDia() {
             if(prompt("CLAVE CIERRE:") === CLAVE) {
                 if(confirm("¿Cerrar día? Se reiniciarán Ventas y Gastos.")) {
-                    db.ref('/niza_v31_rep').update({ ventas: 0,
+                    db.ref('/niza_v31_rep').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { location.reload(); });
+                }
+            }
+        }
+
+        function doCobro(met) {
+            const { fecha, hora } = getColTime();
+            let textoW = `*DELICIAS NIZA - RECIBO*%0A%0A`;
+            const h = store.h_v || [];
+            carrito.forEach(i => {
+                h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
+                textoW += `• ${i.n} - $${f(i.v)}%0A`;
+                let p = store.stock.find(x => x.id === i.id);
+                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
+            });
+            if(descAct > 0) { h.push({ n: "DESC", v: -descAct, u: uAct, t: hora, fecha, m: met }); textoW += `Descuento: -$${f(descAct)}%0A`; }
+            textoW += `%0A*TOTAL: $${f(pedTot)}*`;
+            db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
+                if(confirm("¿Enviar WhatsApp?")) window.open(`https://wa.me/?text=${textoW}`, '_blank');
+                cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
+            });
+        }
+
+        function abrirOpt(id) { 
+            let p = store.stock.find(x => x.id === id); 
+            if(p.sub) { 
+                tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; 
+                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
+                document.getElementById('m-opciones').style.display = 'flex'; 
+            } else { addCarrito(p.id, p.nombre, p.precio, null); } 
+        }
+        function sumarFinal(i) { let sO = tempP.sub[i]; let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarModales(); }
+        function addCarrito(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); }
+        function actualizarTotal() { pedTot = carrito.reduce((a, x) => a + x.v, 0) - descAct; document.getElementById('t-ped').innerText = "$ " + f(pedTot); const c = document.getElementById('lista-carrito'); c.innerHTML = ''; carrito.forEach((item, i) => { c.innerHTML += `<div class="item-cart"><div><p class="text-[10px] font-black uppercase">${item.n}</p><p class="text-[9px] text-orange-400">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`; }); }
+        function quitarI(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); }
+        function vaciarCarrito() { if(confirm("¿Vaciar?")) { carrito = []; descAct = 0; actualizarTotal(); } }
+        function irAPagar() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; }
+        function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        function buscar() { draw(document.getElementById('buscador').value.toLowerCase()); }
+        function addDomi() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } }
+        function aplicarDescuento() { if(carrito.length > 0) { const v = parseInt(prompt("Descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } }
+        function abrirGasto() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || []; h.push({ v, d, u: uAct, t: hora, fecha }); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h }); } }
+    </script>
+</body>
+</html>
