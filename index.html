@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V53 - BUSCADOR FIX</title>
+    <title>NIZA V54 - AJUSTES RESTAURADOS</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,10 +30,11 @@
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
             <div class="flex items-center gap-2">
-                <h1 class="font-black italic text-xs text-yellow-400">NIZA V53</h1>
+                <h1 class="font-black italic text-xs text-yellow-400">NIZA V54</h1>
                 <span id="label-u" class="bg-white/10 px-2 py-0.5 rounded text-[8px] text-zinc-300 uppercase font-bold"></span>
             </div>
-            <div class="flex gap-1.5">
+            <div class="flex gap-1">
+                <button onclick="abrirAdmin()" class="bg-zinc-700 px-2 py-1 rounded text-[10px] tap">⚙️</button>
                 <button onclick="cierreDia()" class="bg-red-600 px-2 py-1 rounded text-[8px] font-black tap text-white">CIERRE</button>
                 <button onclick="abrirReportes()" class="bg-blue-600 px-2 py-1 rounded text-[10px] tap text-white">📊</button>
                 <button onclick="location.reload()" class="bg-zinc-800 px-2 py-1 rounded text-[10px] tap">🔄</button>
@@ -49,7 +50,7 @@
 
     <div class="niza-main">
         <div class="col-izq">
-            <input type="text" id="buscador" oninput="buscar()" placeholder="🔍 Buscar producto..." class="w-full bg-zinc-900 text-white p-3 rounded-xl mb-3 border border-zinc-700 text-sm outline-none focus:border-yellow-500">
+            <input type="text" id="buscador" oninput="buscar()" placeholder="🔍 Buscar producto..." class="w-full bg-zinc-900 text-white p-3 rounded-xl mb-3 border border-zinc-700 text-sm outline-none">
             <div id="menu" class="grid grid-cols-2 gap-2"></div>
         </div>
         <div class="col-der"><div id="lista-carrito"></div></div>
@@ -64,6 +65,14 @@
             <button onclick="irAPagar()" class="btn-pay tap"><div class="text-right"><p class="text-[8px] font-black uppercase">Pagar</p><p id="t-ped" class="text-lg font-black">$ 0</p></div><span>💰</span></button>
         </div>
     </footer>
+
+    <div id="m-admin" class="modal">
+        <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-zinc-500">
+            <h2 class="text-white font-black mb-4 uppercase text-center italic">Ajustes de Inventario</h2>
+            <div id="lista-admin" class="space-y-3"></div>
+            <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-xl mt-6 font-bold uppercase text-[10px]">Cerrar</button>
+        </div>
+    </div>
 
     <div id="m-reportes" class="modal">
         <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-blue-500">
@@ -103,8 +112,7 @@
         const cfg = { apiKey: "AIzaSyBZ93gaPrEkHY5gsNgkBxLEH_GHko_ijFs", authDomain: "delicias--niza.firebaseapp.com", databaseURL: "https://delicias--niza-default-rtdb.firebaseio.com", projectId: "delicias--niza" };
         firebase.initializeApp(cfg);
         const db = firebase.database();
-        let store = null, pedTot = 0, descAct = 0, carrito = [], uAct = "---", tempP = null;
-        let cierresCache = {};
+        let store = null, pedTot = 0, descAct = 0, carrito = [], uAct = "---", tempP = null, cierresCache = {};
 
         const f = (n) => new Intl.NumberFormat('de-DE').format(n || 0);
         function getColTime() { const ahora = new Date(); return { fecha: ahora.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }), hora: ahora.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: false }) }; }
@@ -115,23 +123,13 @@
 
         function setU(n) { uAct = n; document.getElementById('label-u').innerText = n; document.getElementById('m-user').style.display = 'none'; db.ref('/niza_v31_rep').on('value', (snap) => { store = snap.val(); if(store) draw(); }); }
 
-        // DIBUJAR MENÚ CON FILTRO
         function draw(filtro = "") {
             const m = document.getElementById('menu'); m.innerHTML = '';
-            if(!store.stock) return;
-            
+            if(!store || !store.stock) return;
             store.stock.forEach(p => {
-                // Lógica de búsqueda: convierte a minúsculas para comparar
                 if(filtro && !p.nombre.toLowerCase().includes(filtro.toLowerCase())) return;
-
-                m.innerHTML += `
-                <div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5">
-                    <div class="text-xl">${p.icon}</div>
-                    <div class="text-[9px] font-black uppercase text-zinc-400">${p.nombre}</div>
-                    <div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div>
-                </div>`;
+                m.innerHTML += `<div onclick="abrirOpt(${p.id})" class="bg-zinc-900 p-2 rounded-xl tap text-center border border-white/5"><div class="text-xl">${p.icon}</div><div class="text-[9px] font-black uppercase text-zinc-400">${p.nombre}</div><div class="text-orange-500 font-bold text-[10px]">$ ${f(p.precio)}</div></div>`;
             });
-
             document.getElementById('v-base').innerText = "$ " + f(store.base);
             document.getElementById('v-ventas').innerText = "$ " + f(store.ventas);
             document.getElementById('v-gastos').innerText = "$ " + f(store.gastos);
@@ -139,12 +137,31 @@
             actualizarTotal();
         }
 
-        // FUNCIÓN QUE DISPARA LA BÚSQUEDA
-        function buscar() {
-            const texto = document.getElementById('buscador').value;
-            draw(texto);
+        function buscar() { draw(document.getElementById('buscador').value); }
+
+        // LOGICA DE ADMINISTRACIÓN (EDITAR PRECIO/STOCK)
+        function abrirAdmin() {
+            if(prompt("CLAVE ADMIN:") !== "1234") return;
+            document.getElementById('m-admin').style.display = 'flex';
+            const list = document.getElementById('lista-admin');
+            list.innerHTML = `<button onclick="editBase()" class="w-full bg-blue-900/40 p-4 rounded-xl text-blue-400 font-black text-[10px] uppercase border border-blue-500 mb-4">💰 EDITAR BASE CAJA ($${f(store.base)})</button>`;
+            store.stock.forEach((p, idx) => {
+                list.innerHTML += `
+                <div class="bg-zinc-800 p-3 rounded-2xl flex justify-between items-center">
+                    <span class="text-[10px] font-black uppercase">${p.nombre}</span>
+                    <div class="flex gap-2">
+                        <button onclick="editP(${idx})" class="bg-orange-600 px-3 py-2 rounded-lg text-[9px] font-bold">$ ${f(p.precio)}</button>
+                        <button onclick="editC(${idx})" class="bg-zinc-600 px-3 py-2 rounded-lg text-[9px] font-bold">📦 ${p.cant || 0}</button>
+                    </div>
+                </div>`;
+            });
         }
 
+        function editBase() { const n = parseInt(prompt("Nueva Base $:", store.base)); if(!isNaN(n)) db.ref('/niza_v31_rep').update({ base: n }); }
+        function editP(i) { const n = parseInt(prompt("Nuevo Precio $:", store.stock[i].precio)); if(!isNaN(n)) { store.stock[i].precio = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
+        function editC(i) { const n = parseInt(prompt("Nueva Cantidad:", store.stock[i].cant)); if(!isNaN(n)) { store.stock[i].cant = n; db.ref('/niza_v31_rep').update({ stock: store.stock }); } }
+
+        // FUNCIONES DE CIERRE Y REPORTES
         function cierreDia() {
             if(prompt("CLAVE CIERRE:") === "1234" && confirm("¿Cerrar día?")) {
                 const { fecha, hora } = getColTime();
@@ -158,8 +175,7 @@
             const list = document.getElementById('lista-historial');
             list.innerHTML = '<p class="text-center text-zinc-500 text-[10px]">Cargando...</p>';
             db.ref('/historico_cierres').limitToLast(20).once('value', (snap) => {
-                list.innerHTML = '';
-                cierresCache = snap.val() || {};
+                list.innerHTML = ''; cierresCache = snap.val() || {};
                 Object.keys(cierresCache).reverse().forEach(id => {
                     const c = cierresCache[id];
                     list.innerHTML += `
@@ -184,17 +200,8 @@
             document.getElementById('btn-excel-pasado').onclick = () => exportarCierrePasado(id);
             const list = document.getElementById('det-items');
             list.innerHTML = '';
-            if(c.items) {
-                c.items.forEach(i => {
-                    list.innerHTML += `<div class="bg-zinc-900 p-2 rounded flex justify-between text-[9px] border-b border-white/5"><span>${i.t} <b>${i.n}</b></span><span class="text-green-500 font-black">$${f(i.v)}</span></div>`;
-                });
-            }
-            if(c.gastos_det) {
-                list.innerHTML += `<p class="text-red-500 text-[8px] font-black uppercase mt-4 mb-1">Gastos</p>`;
-                c.gastos_det.forEach(g => {
-                    list.innerHTML += `<div class="bg-red-900/10 p-2 rounded flex justify-between text-[9px] italic border-b border-red-900/30"><span>${g.t} - ${g.d}</span><span class="text-red-400 font-black">-$${f(g.v)}</span></div>`;
-                });
-            }
+            if(c.items) c.items.forEach(i => { list.innerHTML += `<div class="bg-zinc-900 p-2 rounded flex justify-between text-[9px] border-b border-white/5"><span>${i.t} <b>${i.n}</b></span><span class="text-green-500 font-black">$${f(i.v)}</span></div>`; });
+            if(c.gastos_det) c.gastos_det.forEach(g => { list.innerHTML += `<div class="bg-red-900/10 p-2 rounded flex justify-between text-[9px] italic"><span>${g.t} - ${g.d}</span><span class="text-red-400">-$${f(g.v)}</span></div>`; });
         }
 
         function exportarCierrePasado(id) {
@@ -216,8 +223,7 @@
 
         function abrirReportes() {
             document.getElementById('m-reportes').style.display = 'flex';
-            const list = document.getElementById('lista-reporte');
-            list.innerHTML = '';
+            const list = document.getElementById('lista-reporte'); list.innerHTML = '';
             const all = [...(store.h_v || []), ...(store.h_g || []).map(g => ({...g, isGasto: true}))].sort((a,b) => b.t.localeCompare(a.t));
             all.forEach(x => {
                 if(x.isGasto) list.innerHTML += `<div class="bg-red-900/10 p-2 rounded border-l-4 border-red-600 text-[9px] mb-1"><div class="flex justify-between font-black"><span>${x.t} - GASTO: ${x.d}</span><span class="text-red-400">-$${f(x.v)}</span></div></div>`;
@@ -227,18 +233,14 @@
 
         function doCobro(met) {
             const { fecha, hora } = getColTime();
-            let textoW = `*NIZA RECIBO*%0AVendedor: ${uAct}%0AFecha: ${fecha}%0A------------------%0A`;
             const h = store.h_v || [];
             carrito.forEach(i => {
                 h.push({ n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id });
-                textoW += `• ${i.n}: $${f(i.v)}%0A`;
                 let p = store.stock.find(x => x.id === i.id);
-                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
+                if(p) { if(i.si !== null && p.sub) p.sub[i.si].c--; else p.cant--; }
             });
-            if(descAct > 0) { h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met }); textoW += `DESC: -$${f(descAct)}%0A`; }
-            textoW += `------------------%0A*TOTAL: $${f(pedTot)}*%0A*Medio: ${met}*`;
+            if(descAct > 0) h.push({ n: "DESCUENTO", v: -descAct, u: uAct, t: hora, fecha, m: met });
             db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h }).then(() => {
-                if(confirm("¿WhatsApp?")) window.open(`https://wa.me/?text=${textoW}`, '_blank');
                 cerrarModales(); carrito = []; descAct = 0; actualizarTotal();
             });
         }
@@ -248,7 +250,7 @@
             document.getElementById('t-ped').innerText = "$ " + f(pedTot);
             const c = document.getElementById('lista-carrito'); c.innerHTML = '';
             carrito.forEach((item, i) => { c.innerHTML += `<div class="item-cart"><div><p class="text-[9px] font-black uppercase text-white">${item.n}</p><p class="text-[8px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-600/30 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`; });
-            if(descAct > 0) { c.innerHTML += `<div class="item-cart bg-red-900/40 border-red-500"><div><p class="text-[9px] font-black uppercase text-red-100">DESC.</p><p class="text-[8px] text-red-200">-$ ${f(descAct)}</p></div><button onclick="descAct=0;actualizarTotal()" class="bg-red-400 text-white w-6 h-6 rounded-full text-[10px]">✕</button></div>`; }
+            if(descAct > 0) c.innerHTML += `<div class="item-cart bg-red-900/40"><div><p class="text-[9px] font-black text-red-100">DESC.</p><p class="text-[8px] text-red-200">-$ ${f(descAct)}</p></div></div>`;
         }
 
         function abrirOpt(id) { 
