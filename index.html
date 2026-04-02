@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V42 STABLE</title>
+    <title>NIZA V43 FINAL-LOCK</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,86 +12,44 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body { 
-            background-color: #000; 
-            color: white; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background-color: #000; color: white; font-family: system-ui, sans-serif; 
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
         .niza-header { 
-            height: 85px; 
-            background: #7f1d1d; 
-            border-bottom: 2px solid #fbbf24; 
-            padding: 8px 12px;
-            flex-shrink: 0;
+            height: 85px; background: #7f1d1d; border-bottom: 2px solid #fbbf24; 
+            padding: 8px 12px; flex-shrink: 0;
         }
 
-        .niza-main { 
-            display: flex; 
-            flex: 1; 
-            overflow: hidden;
-            background: #000;
-            padding-bottom: 110px; 
-        }
-
+        .niza-main { display: flex; flex: 1; overflow: hidden; background: #000; padding-bottom: 110px; }
         .col-izq { width: 55%; overflow-y: auto; padding: 8px; border-right: 1px solid #27272a; }
         .col-der { width: 45%; overflow-y: auto; padding: 8px; background: #09090b; }
 
         .niza-footer { 
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #111; 
-            border-top: 1px solid #3f3f46; 
-            z-index: 50;
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #111; border-top: 1px solid #3f3f46; z-index: 50;
         }
 
-        /* AJUSTE PARA 5 BOTONES EN LA FILA */
         .contenedor-botones {
-            display: grid;
-            grid-template-columns: 0.8fr 0.8fr 0.8fr 0.8fr 2.2fr;
-            gap: 6px;
-            padding: 10px;
+            display: grid; grid-template-columns: 0.8fr 0.8fr 0.8fr 0.8fr 2.2fr;
+            gap: 6px; padding: 10px;
         }
 
         .btn-tool {
-            background: #27272a;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 52px;
-            border: 1px solid #52525b;
+            background: #27272a; border-radius: 10px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; height: 52px; border: 1px solid #52525b;
         }
         .btn-tool b { font-size: 8px; color: #fff; text-transform: uppercase; margin-top: 2px; }
 
         .btn-pay {
-            background: #15803d;
-            border-radius: 10px;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            height: 52px;
+            background: #15803d; border-radius: 10px; color: white;
+            display: flex; align-items: center; justify-content: center; gap: 5px; height: 52px;
             border-bottom: 3px solid #14532d;
         }
 
         .linea-final {
-            height: 24px;
-            background: #fbbf24;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            font-weight: 900;
-            color: black;
-            letter-spacing: 1px;
+            height: 24px; background: #fbbf24; display: flex; align-items: center;
+            justify-content: center; font-size: 9px; font-weight: 900; color: black;
         }
 
         .item-cart { display: flex; justify-content: space-between; align-items: center; background: #18181b; padding: 8px; border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #f97316; }
@@ -102,10 +60,11 @@
 
     <header class="niza-header">
         <div class="flex justify-between items-center mb-2">
-            <h1 class="font-black italic text-xs text-yellow-400">NIZA V42</h1>
-            <div class="flex gap-2">
-                <button onclick="verHistorial()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">🕒</button>
-                <button onclick="accesoAdmin()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">⚙️</button>
+            <h1 class="font-black italic text-xs text-yellow-400">NIZA V43</h1>
+            <div class="flex gap-1.5">
+                <button onclick="cierreDia()" class="bg-red-600 px-2 py-1 rounded text-[9px] font-black tap border border-white/20">CIERRE</button>
+                <button onclick="verHistorial()" class="bg-zinc-800 px-2.5 py-1 rounded text-[10px] tap">🕒</button>
+                <button onclick="accesoAdmin()" class="bg-zinc-800 px-2.5 py-1 rounded text-[10px] tap">⚙️</button>
             </div>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center">
@@ -156,7 +115,7 @@
                 <span class="text-xl">💰</span>
             </button>
         </div>
-        <div class="linea-final">SISTEMA NIZA ELITE V42</div>
+        <div class="linea-final">NIZA ELITE V43 • SEGURIDAD TOTAL</div>
     </footer>
 
     <div id="m-pago" class="modal">
@@ -228,63 +187,7 @@
         };
 
         window.addCarrito = function(id, n, v, si) { carrito.push({ id, n, v, si }); actualizarTotal(); };
-        
         function actualizarTotal() {
             let b = carrito.reduce((a, x) => a + x.v, 0);
             pedTot = b - descAct;
             document.getElementById('t-ped').innerText = "$ " + f(pedTot);
-            renderCarrito();
-        }
-
-        function renderCarrito() { 
-            const c = document.getElementById('lista-carrito'); c.innerHTML = ''; 
-            carrito.forEach((item, i) => { 
-                c.innerHTML += `<div class="item-cart"><div><p class="text-[10px] font-black uppercase text-white">${item.n}</p><p class="text-[9px] text-orange-400 font-bold">$ ${f(item.v)}</p></div><button onclick="quitarI(${i})" class="bg-red-900 text-white w-6 h-6 rounded-full tap text-[10px]">✕</button></div>`; 
-            }); 
-            c.scrollTop = c.scrollHeight;
-        }
-
-        window.vaciarCarrito = function() {
-            if(confirm("¿Borrar todo el pedido actual?")) {
-                carrito = [];
-                descAct = 0;
-                actualizarTotal();
-            }
-        };
-
-        window.abrirOpt = function(id) { 
-            let p = store.stock.find(x => x.id === id); 
-            if(p.sub) { 
-                tempP = p; document.getElementById('opt-t').innerText = p.nombre; const c = document.getElementById('opt-c'); c.innerHTML = ''; 
-                p.sub.forEach((s, i) => { c.innerHTML += `<button onclick="sumarFinal(${i})" class="bg-zinc-800 py-4 rounded-xl text-xs font-black tap flex justify-between px-4"><span>${s.n}</span> <span class="text-green-500">${s.c}</span></button>`; }); 
-                document.getElementById('m-opciones').style.display = 'flex'; 
-            } else { addCarrito(p.id, p.nombre, p.precio, null); } 
-        };
-
-        window.sumarFinal = function(i) { let sO = tempP.sub[i]; let ex = (sO.n === 'Con Patacón') ? 1000 : 0; addCarrito(tempP.id, `${tempP.nombre} (${sO.n})`, tempP.precio + ex, i); cerrarModales(); };
-        window.quitarI = function(i) { carrito.splice(i, 1); if(carrito.length===0) descAct=0; actualizarTotal(); };
-        window.irAPagar = function() { if(carrito.length > 0) document.getElementById('m-pago').style.display = 'flex'; };
-        window.cerrarModales = function() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
-        window.buscar = function() { draw(document.getElementById('buscador').value.toLowerCase()); };
-        
-        window.doCobro = function(met) {
-            const { fecha, hora } = getColTime();
-            const h = store.h_v || [], gv = store.global_v || [];
-            carrito.forEach(i => {
-                const vO = { n: i.n, v: i.v, u: uAct, t: hora, fecha, m: met, pid: i.id, psi: i.si };
-                h.push(vO); gv.push(vO);
-                let p = store.stock.find(x => x.id === i.id);
-                if(p) { if(i.si !== null) p.sub[i.si].c--; else p.cant--; }
-            });
-            if(descAct > 0) { const dO = { n: "DESC", v: -descAct, u: uAct, t: hora, fecha, m: met, esDesc: true }; h.push(dO); gv.push(dO); }
-            db.ref('/niza_v31_rep').update({ ventas: store.ventas + pedTot, stock: store.stock, h_v: h, global_v: gv }).then(() => { cerrarModales(); carrito = []; descAct = 0; actualizarTotal(); });
-        };
-        
-        window.addDomi = function() { const v = parseInt(prompt("Valor domicilio $:")); if(v) { carrito.push({ id: 99, n: "Domicilio", v: v, si: null }); actualizarTotal(); } };
-        window.aplicarDescuento = function() { if(carrito.length > 0) { const v = parseInt(prompt("Valor de descuento $:")); if(v > 0) { descAct = v; actualizarTotal(); } } };
-        window.abrirGasto = function() { const v = parseInt(prompt("Valor $:")); const d = prompt("Concepto:"); if(v && d) { const { fecha, hora } = getColTime(); const h = store.h_g || [], gh = store.global_g || []; const obj = { v, d, u: uAct, t: hora, fecha, m: 'Efectivo' }; h.push(obj); gh.push(obj); db.ref('/niza_v31_rep').update({ gastos: (store.gastos || 0) + v, h_g: h, global_g: gh }); } };
-        window.verHistorial = function() { alert("Historial conectado."); };
-        window.accesoAdmin = function() { if(prompt("CLAVE:") === CLAVE) alert("OK"); };
-    </script>
-</body>
-</html>
