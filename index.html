@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NIZA V46 - BASE & REFRESH</title>
+    <title>NIZA V47 - DETALLE TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,18 +22,18 @@
         .btn-pay { background: #15803d; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; gap: 5px; height: 52px; border-bottom: 3px solid #14532d; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
         .item-cart { display: flex; justify-content: space-between; align-items: center; background: #18181b; padding: 8px; border-radius: 8px; margin-bottom: 6px; border-left: 3px solid #f97316; }
+        .admin-section { border-left: 3px solid #fbbf24; padding-left: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <header class="niza-header">
         <div class="flex justify-between items-center mb-1.5">
-            <h1 class="font-black italic text-xs text-yellow-400">NIZA V46</h1>
-            <div class="flex gap-1.5">
-                <button onclick="setBase()" class="bg-blue-600 px-2 py-1 rounded text-[8px] font-bold tap">INICIAR BASE</button>
-                <button onclick="cierreDia()" class="bg-red-600 px-2 py-1 rounded text-[8px] font-bold tap">CIERRE</button>
-                <button onclick="location.reload()" class="bg-zinc-800 px-2 py-1 rounded text-[10px] tap">🔄</button>
-                <button onclick="accesoAdmin()" class="bg-zinc-800 px-2 py-1 rounded text-[10px] tap">⚙️</button>
+            <h1 class="font-black italic text-xs text-yellow-400">NIZA V47</h1>
+            <div class="flex gap-2">
+                <button onclick="cierreDia()" class="bg-red-600 px-3 py-1 rounded text-[9px] font-black tap">CIERRE</button>
+                <button onclick="location.reload()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">🔄</button>
+                <button onclick="accesoAdmin()" class="bg-zinc-800 px-3 py-1 rounded text-[10px] tap">⚙️</button>
             </div>
         </div>
         <div class="grid grid-cols-4 gap-1.5 text-center">
@@ -49,8 +49,8 @@
                 <span class="block text-[6px] uppercase font-bold text-zinc-400">Gastos</span>
                 <span class="text-red-400 text-[10px] font-black" id="v-gastos">$ 0</span>
             </div>
-            <div class="bg-orange-600 rounded shadow-inner py-0.5">
-                <span class="block text-[6px] uppercase font-bold text-orange-100">Total Caja</span>
+            <div class="bg-orange-600 rounded py-0.5">
+                <span class="block text-[6px] uppercase font-bold text-orange-100">Caja Total</span>
                 <span class="text-white text-[10px] font-black" id="v-total">$ 0</span>
             </div>
         </div>
@@ -72,20 +72,28 @@
             <button onclick="abrirGasto()" class="btn-tool text-red-400 tap"><span>💸</span><b>Gasto</b></button>
             <button onclick="irAPagar()" class="btn-pay tap"><div class="text-right"><p class="text-[8px] font-black uppercase">Pagar</p><p id="t-ped" class="text-lg font-black">$ 0</p></div><span>💰</span></button>
         </div>
-        <div class="h-6 bg-yellow-500 flex items-center justify-center text-[9px] font-black text-black">NIZA ELITE V46 • CONTROL TOTAL</div>
+        <div class="h-6 bg-yellow-500 flex items-center justify-center text-[9px] font-black text-black uppercase">NIZA ELITE V47 • SABORES DETALLADOS</div>
     </footer>
 
-    <div id="m-pago" class="modal">
-        <div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center">
-            <h2 class="text-white font-black mb-6 uppercase">Método de Pago</h2>
-            <button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap text-white">💵 EFECTIVO</button>
-            <button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap text-white">📱 TRANSF.</button>
-            <button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button>
+    <div id="m-admin" class="modal">
+        <div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto border border-yellow-500">
+            <h2 class="text-yellow-500 font-black mb-6 uppercase text-center text-sm italic">Configuración de Negocio</h2>
+            
+            <div class="admin-section mb-8">
+                <p class="text-blue-400 font-black text-[10px] mb-2 uppercase">💰 Base de Caja Inicial</p>
+                <input type="number" id="adm-base" class="w-full bg-black p-3 rounded-xl border border-zinc-700 text-white font-bold" onchange="updBase(this.value)">
+            </div>
+
+            <div class="admin-section">
+                <p class="text-yellow-500 font-black text-[10px] mb-4 uppercase">📦 Inventario de Productos</p>
+                <div id="admin-list"></div>
+            </div>
+
+            <button onclick="cerrarModales()" class="w-full bg-zinc-800 py-4 rounded-2xl mt-4 font-black text-xs uppercase tap">Cerrar Panel</button>
         </div>
     </div>
 
-    <div id="m-admin" class="modal"><div class="bg-zinc-900 p-5 rounded-3xl w-full max-w-md h-[80vh] overflow-y-auto border border-yellow-500"><h2 class="text-yellow-500 font-black mb-4 uppercase text-center text-xs">Inventario y Precios</h2><div id="admin-list"></div><button onclick="cerrarModales()" class="w-full bg-red-600 py-3 rounded-xl mt-4 font-bold">CERRAR</button></div></div>
-
+    <div id="m-pago" class="modal"><div class="bg-zinc-900 p-8 rounded-3xl w-full max-w-xs border border-green-600 text-center"><h2 class="text-white font-black mb-6 uppercase">Método de Pago</h2><button onclick="doCobro('Efectivo')" class="w-full bg-green-700 py-5 rounded-2xl text-xl font-black mb-4 tap">💵 EFECTIVO</button><button onclick="doCobro('Transferencia')" class="w-full bg-blue-700 py-5 rounded-2xl text-xl font-black tap">📱 TRANSF.</button><button onclick="cerrarModales()" class="mt-4 text-zinc-500 text-xs">← Volver</button></div></div>
     <div id="m-user" class="modal" style="display: flex;"><div class="bg-zinc-900 p-6 rounded-3xl w-72 border border-yellow-500 text-center"><h2 class="text-white font-black mb-4 uppercase text-xs italic text-yellow-500">¿Quién atiende?</h2><div class="grid grid-cols-2 gap-2" id="user-btns"></div></div></div>
     <div id="m-opciones" class="modal"><div class="bg-zinc-900 p-5 rounded-2xl w-72 border border-orange-500"><h2 id="opt-t" class="text-yellow-400 font-black mb-4 uppercase text-center text-xs"></h2><div id="opt-c" class="flex flex-col gap-2"></div><button onclick="cerrarModales()" class="mt-4 text-zinc-600 text-[10px] w-full text-center">Volver</button></div></div>
 
@@ -117,21 +125,50 @@
             document.getElementById('v-total').innerText = "$ " + f((store.base || 0) + (store.ventas || 0) - (store.gastos || 0));
         }
 
-        window.setBase = function() {
-            const v = parseInt(prompt("Ingrese valor de BASE INICIAL $:"));
-            if(!isNaN(v)) { db.ref('/niza_v31_rep').update({ base: v }); }
-        };
+        function accesoAdmin() {
+            if(prompt("CLAVE ADMIN:") === CLAVE) {
+                document.getElementById('m-admin').style.display = 'flex';
+                document.getElementById('adm-base').value = store.base || 0;
+                const list = document.getElementById('admin-list'); list.innerHTML = '';
+                store.stock.forEach((p, pIdx) => {
+                    let html = `<div class="bg-zinc-800 p-3 rounded-xl mb-3 border border-zinc-700">
+                        <p class="text-white font-black text-[10px] mb-2 uppercase">${p.icon} ${p.nombre}</p>`;
+                    
+                    if(p.sub) {
+                        p.sub.forEach((s, sIdx) => {
+                            html += `<div class="grid grid-cols-2 gap-2 mb-2 bg-black/30 p-2 rounded-lg">
+                                <span class="text-[9px] col-span-2 text-zinc-400 font-bold uppercase">${s.n}</span>
+                                <input type="number" value="${p.precio}" onchange="updSub(${pIdx}, ${sIdx}, 'precio', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px] text-white" placeholder="Precio">
+                                <input type="number" value="${s.c}" onchange="updSub(${pIdx}, ${sIdx}, 'cant', this.value)" class="bg-black p-2 rounded border border-zinc-600 text-[10px] text-white" placeholder="Stock">
+                            </div>`;
+                        });
+                    } else {
+                        html += `<div class="grid grid-cols-2 gap-2">
+                            <input type="number" value="${p.precio}" onchange="upd(${pIdx},'precio',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs text-white">
+                            <input type="number" value="${p.cant}" onchange="upd(${pIdx},'cant',this.value)" class="bg-black p-2 rounded border border-zinc-600 text-xs text-white">
+                        </div>`;
+                    }
+                    html += `</div>`;
+                    list.innerHTML += html;
+                });
+            }
+        }
 
-        window.cierreDia = function() {
-            if(prompt("CLAVE DE CIERRE:") === CLAVE) {
+        function updBase(v) { db.ref('/niza_v31_rep').update({ base: parseInt(v) }); }
+        function upd(i, c, v) { store.stock[i][c] = parseInt(v); db.ref('/niza_v31_rep').update({ stock: store.stock }); }
+        function updSub(pI, sI, campo, valor) {
+            if(campo === 'precio') store.stock[pI].precio = parseInt(valor);
+            else store.stock[pI].sub[sI].c = parseInt(valor);
+            db.ref('/niza_v31_rep').update({ stock: store.stock });
+        }
+
+        function cierreDia() {
+            if(prompt("CLAVE CIERRE:") === CLAVE) {
                 if(confirm("¿Cerrar día? Ventas y Gastos volverán a cero.")) {
-                    const limpiarBase = confirm("¿Desea poner la BASE en cero también?");
-                    const updateObj = { ventas: 0, gastos: 0, h_v: [], h_g: [] };
-                    if(limpiarBase) updateObj.base = 0;
-                    db.ref('/niza_v31_rep').update(updateObj).then(() => { alert("Día cerrado."); location.reload(); });
+                    db.ref('/niza_v31_rep').update({ ventas: 0, gastos: 0, h_v: [], h_g: [] }).then(() => { location.reload(); });
                 }
             }
-        };
+        }
 
         function doCobro(met) {
             const { fecha, hora } = getColTime();
@@ -151,23 +188,6 @@
             });
         }
 
-        function accesoAdmin() {
-            if(prompt("CLAVE:") === CLAVE) {
-                document.getElementById('m-admin').style.display = 'flex';
-                const list = document.getElementById('admin-list'); list.innerHTML = '';
-                store.stock.forEach((p, idx) => {
-                    list.innerHTML += `<div class="bg-zinc-800 p-3 rounded-xl mb-2 border border-zinc-700">
-                        <p class="text-yellow-500 font-bold text-xs">${p.nombre}</p>
-                        <div class="flex gap-2 mt-2">
-                            <input type="number" value="${p.precio}" onchange="upd(${idx},'precio',this.value)" class="bg-black p-2 rounded w-1/2 border border-zinc-600 text-xs text-white">
-                            <input type="number" value="${p.cant}" onchange="upd(${idx},'cant',this.value)" class="bg-black p-2 rounded w-1/2 border border-zinc-600 text-xs text-white">
-                        </div>
-                    </div>`;
-                });
-            }
-        }
-
-        function upd(i, c, v) { store.stock[i][c] = parseInt(v); db.ref('/niza_v31_rep').update({ stock: store.stock }); }
         function abrirOpt(id) { 
             let p = store.stock.find(x => x.id === id); 
             if(p.sub) { 
